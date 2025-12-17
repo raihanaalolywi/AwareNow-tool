@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import MinValueValidator, MaxValueValidator
 
 # ==== Contract Model => 3 contract saved in DB ====
 class SubscriptionPlan(models.Model):
@@ -67,8 +66,7 @@ class User(AbstractUser):
         null=True,
         blank=True
     )
-
-     # Quick access properties
+    
     @property
     def is_platform_admin(self):
         return self.role == 'PLATFORM_ADMIN'
@@ -80,14 +78,10 @@ class User(AbstractUser):
     @property
     def is_employee(self):
         return self.role == 'EMPLOYEE'
-    
-    def __str__(self):
-        role_display = dict(self.ROLE_CHOICES).get(self.role, self.role)
-        return f"{self.get_full_name()} ({role_display})"
 
+# Add this AFTER the User class (at the end of the file):
+from django.core.validators import MinValueValidator, MaxValueValidator
 
-
-# ==== Employee Profile Model (Simplified) ====
 class EmployeeProfile(models.Model):
     """
     Extended profile for employees with training metrics.
