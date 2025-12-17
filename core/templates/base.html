@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{% block title %}AwareNow{% endblock %}</title>
+
+  {% load static %}
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Your CSS -->
+  <link rel="stylesheet" href="{% static 'css/admin.css' %}">
+</head>
+
+<body>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top an-navbar" id="anNavbar">
+        <div class="container-fluid px-3 px-md-4">
+      
+          <!-- Left: Brand -->
+          <a class="navbar-brand fw-semibold" href="{% url 'campaigns:phishing' %}">
+            AwareNow
+          </a>
+      
+          <!-- Mobile toggle -->
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+                  aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+      
+          <!-- Collapsible -->
+          <div class="collapse navbar-collapse" id="mainNavbar">
+      
+            <!-- Center: Links -->
+            <ul class="navbar-nav mx-auto mb-2 mb-lg-0 an-nav-center">
+      
+              <!-- Campaigns Dropdown -->
+              <li class="nav-item dropdown an-hover-dropdown">
+                <a class="nav-link dropdown-toggle an-navlink {% if request.resolver_match.url_name == 'phishing' %}active{% endif %}"
+                   href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Campaigns
+                </a>
+      
+                <ul class="dropdown-menu an-dropdown-menu">
+                  <li>
+                    <a class="dropdown-item {% if request.resolver_match.url_name == 'phishing' %}active{% endif %}"
+                       href="{% url 'campaigns:phishing' %}">
+                      Phishing
+                    </a>
+                  </li>
+                  <li>
+                    <a class="dropdown-item" href="#">
+                      Awareness
+                    </a>
+                  </li>
+                </ul>
+              </li>
+      
+              <li class="nav-item">
+                <a class="nav-link an-navlink" href="#">Users</a>
+              </li>
+      
+              <li class="nav-item">
+                <a class="nav-link an-navlink" href="#">Library</a>
+              </li>
+      
+              <li class="nav-item">
+                <a class="nav-link an-navlink" href="#">Policies</a>
+              </li>
+      
+            </ul>
+      
+            <!-- Right: Actions -->
+            <div class="d-flex align-items-center gap-2 ms-lg-auto">
+              <a class="btn btn-dark btn-sm an-btn" href="{% url 'campaigns:phishing' %}">
+                + Create Phishing
+              </a>
+      
+              <div class="dropdown">
+                <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+                  Account
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="#">Profile</a></li>
+                  <li><a class="dropdown-item" href="#">Settings</a></li>
+                  <li><hr class="dropdown-divider"></li>
+                  <li><a class="dropdown-item text-danger" href="#">Logout</a></li>
+                </ul>
+              </div>
+            </div>
+      
+          </div>
+        </div>
+      </nav>      
+
+<!-- Page wrapper -->
+<main class="container-fluid px-3 px-md-4 py-4">
+  {% block content %}{% endblock %}
+</main>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Small JS -->
+<script src="{% static 'js/admin.js' %}"></script>
+
+</body>
+</html>

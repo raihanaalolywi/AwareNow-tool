@@ -1,3 +1,4 @@
 from django.shortcuts import render
 
-# Create your views here.
+def phishing_page(request):
+    return render(request, "campaigns/phishing.html")

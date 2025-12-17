@@ -1,0 +1,110 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
+:root{
+  --brand: #7b1020;
+  --brand-dark: #5c0c17;
+  --brand-soft: rgba(123, 16, 32, 0.10);
+  --bg: #f6f7fb;
+  --text: #111827;
+  --border: #e5e7eb;
+  --shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+body{
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.an-navbar{
+  transition: box-shadow 200ms ease;
+}
+
+.an-navbar.an-shadow{
+  box-shadow: var(--shadow);
+}
+
+/* Center nav spacing */
+.an-nav-center{
+  gap: 10px;
+}
+
+/* Nav link hover animation */
+.an-navlink{
+  position: relative;
+  font-weight: 500;
+  padding: .6rem .75rem;
+  border-radius: 12px;
+  transition: transform 160ms ease, background-color 160ms ease, color 160ms ease;
+}
+
+.an-navlink:hover{
+  transform: translateY(-1px);
+  background: rgba(17,24,39,0.05);
+}
+
+.navbar .nav-link.active{
+  color: var(--brand) !important;
+  font-weight: 700;
+}
+
+.navbar .nav-link.active::after{
+  content:"";
+  position:absolute;
+  left:.7rem;
+  right:.7rem;
+  bottom:.35rem;
+  height:2px;
+  background: var(--brand);
+  border-radius: 10px;
+  opacity:.9;
+}
+
+/* Dropdown menu animation */
+.an-dropdown-menu{
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  box-shadow: 0 16px 34px rgba(0,0,0,0.10);
+  padding: 8px;
+  margin-top: 10px;
+  transform-origin: top;
+  opacity: 0;
+  transform: translateY(8px) scale(0.98);
+  transition: opacity 140ms ease, transform 140ms ease;
+  display: block;           /* مهم للأنيميشن */
+  pointer-events: none;     /* يتفعّل فقط لما تكون show */
+  visibility: hidden;
+}
+
+/* Bootstrap يضيف .show */
+.dropdown-menu.show.an-dropdown-menu{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+  visibility: visible;
+}
+
+.dropdown-item{
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.dropdown-menu .dropdown-item.active{
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-weight: 600;
+}
+
+/* Brand button */
+.btn-dark{
+  background: var(--brand) !important;
+  border-color: var(--brand) !important;
+}
+.btn-dark:hover{
+  background: var(--brand-dark) !important;
+  border-color: var(--brand-dark) !important;
+}
+
+.an-btn{
+  border-radius: 12px;
+}
