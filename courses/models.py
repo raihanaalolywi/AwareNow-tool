@@ -1,5 +1,6 @@
 from django.db import models
 from account.models import Company, User
+from django.utils import timezone
 
 # Create your models here.
 
@@ -145,7 +146,6 @@ class CompanyCourseGroup(models.Model):  # Fixed typo from "CompayCourseGroup"
     description = models.TextField(blank=True)
     courses = models.ManyToManyField(Course, related_name='assigned_groups', blank=True)
     assigned_to_employees = models.ManyToManyField('account.EmployeeProfile', 
-                                                   through='EmployeeCourseAssignment',
                                                    related_name='course_groups')
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -154,9 +154,7 @@ class CompanyCourseGroup(models.Model):  # Fixed typo from "CompayCourseGroup"
         return f"{self.name} - {self.company.name}"
     
 class EmployeeCourseAssignment(models.Model):
-    """
-    Tracks which courses are assigned to which employees
-    """
+    """Only for direct course assignments"""
     employee = models.ForeignKey('account.EmployeeProfile', on_delete=models.CASCADE, 
                                  related_name='assigned_courses')
     course = models.ForeignKey(Course, on_delete=models.CASCADE, 
