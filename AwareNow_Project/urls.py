@@ -22,5 +22,6 @@ urlpatterns = [
     path('',include('account.urls')),
     path('',include('campaigns.urls')),
     path('',include('courses.urls')),
-    path('',include('policies.urls')),
+   path('policies/', include('policies.urls')),
+
 ]

@@ -1,0 +1,112 @@
+/* =========================
+   Page Wrapper
+========================= */
+
+.policy-detail-page {
+    min-height: 100vh;
+    background: #f4f4f4;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+/* =========================
+   Policy Box
+========================= */
+
+.policy-box {
+    background: #ffffff;
+    width: 100%;
+    max-width: 800px;
+
+    border-radius: 20px;
+    padding: 40px;
+
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* =========================
+   Title
+========================= */
+
+.policy-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #222;
+    text-align: center;
+}
+
+/* =========================
+   Description
+========================= */
+
+.policy-description {
+    font-size: 15px;
+    line-height: 1.8;
+    color: #555;
+    white-space: pre-line; /* يحافظ على تنسيق النص */
+}
+
+/* =========================
+   Divider
+========================= */
+
+.policy-divider {
+    border: none;
+    height: 1px;
+    background: #e0e0e0;
+}
+
+/* =========================
+   Acknowledge Button
+========================= */
+
+.ack-btn {
+    align-self: center;
+
+    background: #b71c1c;
+    color: #ffffff;
+
+    border: none;
+    border-radius: 999px;
+
+    padding: 12px 28px;
+    font-size: 14px;
+    font-weight: 500;
+
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ack-btn:hover {
+    background: #8e1b1b;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(183, 28, 28, 0.3);
+}
+
+/* =========================
+   Responsive
+========================= */
+
+@media (max-width: 768px) {
+
+    .policy-detail-page {
+        padding: 20px;
+    }
+
+    .policy-box {
+        padding: 28px;
+    }
+
+    .policy-title {
+        font-size: 20px;
+    }
+}

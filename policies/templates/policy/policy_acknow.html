@@ -1,0 +1,24 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/policy_acknow.css' %}">
+
+<div class="ack-page">
+
+    <div class="ack-box">
+
+        <div class="ack-icon">✓</div>
+
+        <h2 class="ack-title">
+            Acknowledgement Confirmed
+        </h2>
+
+        <p class="ack-message">
+            I have read and I acknowledged this policy successfully.
+        </p>
+
+        <a href="{% url 'policies:policy_list' %}" class="ack-btn">
+            Back to Policies
+        </a>
+
+    </div>
+
+</div>

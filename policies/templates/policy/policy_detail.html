@@ -1,0 +1,32 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/policy_detail.css' %}">
+
+<div class="policy-detail-page">
+
+    <div class="policy-box">
+
+        <!-- Policy Title -->
+        <h2 class="policy-title">
+            {{ policy.title }}
+        </h2>
+
+        <!-- Policy Description -->
+        <p class="policy-description">
+            {{ policy.description }}
+        </p>
+
+        <hr class="policy-divider">
+
+        <!-- Acknowledge Section -->
+        <form method="post" action="{% url 'policies:policy_acknowledge' %}">
+            {% csrf_token %}
+            <input type="hidden" name="policy_id" value="{{ policy.id }}">
+
+            <button type="submit" class="ack-btn">
+                I Acknowledge
+            </button>
+        </form>
+
+    </div>
+
+</div>

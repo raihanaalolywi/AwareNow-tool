@@ -1,0 +1,165 @@
+/* =========================
+   Page Wrapper
+========================= */
+
+.cp-page {
+    min-height: 100vh;
+    background: linear-gradient(180deg, #f6f6f6, #eeeeee);
+    padding: 40px;
+    box-sizing: border-box;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* =========================
+   Header
+========================= */
+
+.cp-header {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.cp-title {
+    font-size: 26px;
+    font-weight: 600;
+    color: #222;   /* صار غامق */
+}
+
+.cp-logo {
+    font-size: 14px;
+    color: #777;
+}
+
+/* =========================
+   Card
+========================= */
+
+.cp-card {
+    width: 100%;
+    max-width: 720px;
+    background: #e5e5e5;
+    border-radius: 22px;
+    padding: 36px;
+
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* =========================
+   Form
+========================= */
+
+.cp-group {
+    margin-bottom: 24px;
+}
+
+.cp-label {
+    display: block;
+    margin-bottom: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #444;
+}
+
+/* =========================
+   Inputs
+========================= */
+
+.cp-input,
+.cp-textarea,
+.cp-select {
+    width: 100%;
+    padding: 15px 18px;
+    border-radius: 14px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    background: #ffffff;
+    transition: box-shadow 0.2s ease;
+}
+
+.cp-input:focus,
+.cp-textarea:focus,
+.cp-select:focus {
+    box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.15);
+}
+
+.cp-textarea {
+    min-height: 150px;
+    resize: none;
+}
+
+.cp-select {
+    cursor: pointer;
+}
+
+/* =========================
+   Actions
+========================= */
+
+.cp-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 36px;
+}
+
+/* =========================
+   Publish Button
+========================= */
+
+.cp-btn {
+    background: linear-gradient(135deg, #8e1b1b, #d32f2f);
+    color: #ffffff;
+    border: none;
+    border-radius: 999px;
+    padding: 14px 48px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+
+    box-shadow: 0 8px 18px rgba(211, 47, 47, 0.35);
+    transition: all 0.25s ease;
+}
+
+.cp-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(183, 28, 28, 0.45);
+}
+
+/* =========================
+   Responsive (Mobile)
+========================= */
+
+@media (max-width: 768px) {
+
+    .cp-page {
+        padding: 20px;
+    }
+
+    .cp-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .cp-title {
+        font-size: 22px;
+    }
+
+    .cp-card {
+        padding: 24px;
+        border-radius: 18px;
+    }
+
+    .cp-btn {
+        width: 100%;
+        text-align: center;
+    }
+}

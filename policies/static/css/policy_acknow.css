@@ -1,0 +1,95 @@
+/* Page Wrapper */
+
+.ack-page {
+    min-height: 100vh;
+    background: #f4f4f4;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 40px;
+    box-sizing: border-box;
+}
+
+/* Confirmation Box */
+
+.ack-box {
+    background: #ffffff;
+    max-width: 420px;
+    width: 100%;
+
+    border-radius: 20px;
+    padding: 40px;
+
+    text-align: center;
+
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+}
+
+/*Icon */
+
+.ack-icon {
+    width: 64px;
+    height: 64px;
+
+    margin: 0 auto 20px;
+
+    border-radius: 50%;
+    background: #4caf50;
+    color: #ffffff;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    font-size: 28px;
+    font-weight: bold;
+}
+
+/* Text */
+
+.ack-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 10px;
+}
+
+.ack-message {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+    margin-bottom: 30px;
+}
+
+/*  Button */
+
+.ack-btn {
+    display: inline-block;
+
+    text-decoration: none;
+    background: #b71c1c;
+    color: #ffffff;
+
+    padding: 10px 24px;
+    border-radius: 999px;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.ack-btn:hover {
+    background: #8e1b1b;
+    transform: translateY(-2px);
+}
+
+/*Responsive*/
+
+@media (max-width: 600px) {
+    .ack-box {
+        padding: 30px;
+    }
+}

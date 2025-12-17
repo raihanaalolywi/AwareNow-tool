@@ -1,0 +1,63 @@
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/policy.css' %}">
+
+<div class="pl-page">
+
+    <!-- Header -->
+    <div class="pl-header">
+        <h2 class="pl-title">Policies</h2>
+
+        <a href="{% url 'policies:create_policy' %}" class="pl-create-btn">
+            + Create Policy
+        </a>
+    </div>
+
+    <!-- All Policies -->
+    <div class="pl-section">
+        <h3 class="pl-subtitle">All Policies</h3>
+
+        <div class="pl-grid">
+            {% for policy in policies %}
+                <div class="pl-card">
+                    <h4 class="pl-card-title">{{ policy.title }}</h4>
+
+                    <p class="pl-card-desc">
+                        {{ policy.description|truncatechars:120 }}
+                    </p>
+
+                    <div class="pl-card-actions">
+                        <a href="{% url 'policies:policy_detail' policy.id %}" class="pl-detail-btn">
+                            View Details
+                        </a>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="pl-empty">No policies found.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination (Numbers) -->
+        {% if policies.paginator.num_pages > 1 %}
+        <div class="pl-pagination">
+
+            {% if policies.has_previous %}
+                <a href="?page={{ policies.previous_page_number }}" class="pl-page-btn">‹</a>
+            {% endif %}
+
+            {% for num in policies.paginator.page_range %}
+                {% if policies.number == num %}
+                    <span class="pl-page-number active">{{ num }}</span>
+                {% else %}
+                    <a href="?page={{ num }}" class="pl-page-number">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if policies.has_next %}
+                <a href="?page={{ policies.next_page_number }}" class="pl-page-btn">›</a>
+            {% endif %}
+
+        </div>
+        {% endif %}
+
+    </div>
+</div>
