@@ -153,19 +153,76 @@ class CompanyCourseGroup(models.Model):  # Fixed typo from "CompayCourseGroup"
     def __str__(self):
         return f"{self.name} - {self.company.name}"
     
+# class EmployeeCourseAssignment(models.Model):
+#     """
+#     Tracks which courses are assigned to which employees
+#     """
+#     employee = models.ForeignKey('account.EmployeeProfile', on_delete=models.CASCADE, 
+#                                  related_name='assigned_courses')
+#     course = models.ForeignKey(Course, on_delete=models.CASCADE, 
+#                                related_name='employee_assignments')
+#     assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, 
+#                                     related_name='assigned_employee_courses')
+#     assigned_at = models.DateTimeField(auto_now_add=True)
+    
+#     # Status tracking
+#     STATUS_CHOICES = [
+#         ('assigned', 'Assigned'),
+#         ('in_progress', 'In Progress'),
+#         ('completed', 'Completed'),
+#         ('overdue', 'Overdue'),
+#         ('cancelled', 'Cancelled'),
+#     ]
+#     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='assigned')
+    
+#     # Completion tracking
+#     started_at = models.DateTimeField(null=True, blank=True)
+#     completed_at = models.DateTimeField(null=True, blank=True)
+#     due_date = models.DateField(null=True, blank=True)
+    
+#     # Progress tracking
+#     progress_percentage = models.FloatField(default=0.0)  # 0.0 to 100.0
+#     last_accessed = models.DateTimeField(null=True, blank=True)
+    
+#     class Meta:
+#         unique_together = ['employee', 'course']
+#         ordering = ['-assigned_at']
+    
+#     def __str__(self):
+#         return f"{self.employee.user.email} - {self.course.title}"
+
+# after add FK 
 class EmployeeCourseAssignment(models.Model):
     """
     Tracks which courses are assigned to which employees
     """
-    employee = models.ForeignKey('account.EmployeeProfile', on_delete=models.CASCADE, 
-                                 related_name='assigned_courses')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, 
-                               related_name='employee_assignments')
-    assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, 
-                                    related_name='assigned_employee_courses')
+    company_course_group = models.ForeignKey(
+        CompanyCourseGroup,
+        on_delete=models.CASCADE,
+        related_name='employee_assignments'
+    )
+
+    employee = models.ForeignKey(
+        'account.EmployeeProfile',
+        on_delete=models.CASCADE,
+        related_name='assigned_courses'
+    )
+
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name='employee_assignments'
+    )
+
+    assigned_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='assigned_employee_courses'
+    )
+
     assigned_at = models.DateTimeField(auto_now_add=True)
-    
-    # Status tracking
+
     STATUS_CHOICES = [
         ('assigned', 'Assigned'),
         ('in_progress', 'In Progress'),
@@ -174,23 +231,21 @@ class EmployeeCourseAssignment(models.Model):
         ('cancelled', 'Cancelled'),
     ]
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='assigned')
-    
-    # Completion tracking
+
     started_at = models.DateTimeField(null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     due_date = models.DateField(null=True, blank=True)
-    
-    # Progress tracking
-    progress_percentage = models.FloatField(default=0.0)  # 0.0 to 100.0
+
+    progress_percentage = models.FloatField(default=0.0)
     last_accessed = models.DateTimeField(null=True, blank=True)
-    
+
     class Meta:
-        unique_together = ['employee', 'course']
+        unique_together = ['employee', 'course', 'company_course_group']
         ordering = ['-assigned_at']
-    
+
     def __str__(self):
         return f"{self.employee.user.email} - {self.course.title}"
-    
+
 class EmployeeCourseProgress(models.Model):
     """
     Detailed progress tracking for employee course completion
