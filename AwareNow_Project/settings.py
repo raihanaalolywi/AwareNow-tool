@@ -15,9 +15,8 @@ import os
 
 # ==== email setting ====
 from dotenv import load_dotenv
-import os
-
 load_dotenv()
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -150,3 +149,5 @@ EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
 
 DEFAULT_FROM_EMAIL = "AwareNow <wehind60@gmail.com>"
+
+SITE_DOMAIN = "http://127.0.0.1:8000"

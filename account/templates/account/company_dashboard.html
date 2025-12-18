@@ -1,0 +1,12 @@
+{% extends "core/base.html" %}
+
+{% block title %}Company Dashboard{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h3 class="fw-bold">Company Dashboard</h3>
+    <p class="text-muted">
+        Welcome {{ request.user.company.name }}
+    </p>
+</div>
+{% endblock %}

@@ -10,9 +10,10 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth import logout
 from .models import SubscriptionPlan
 from django.utils import timezone
+from .models import User
 
 
-# ==== admin platform login ====
+# ==== admin platform Dashboard ====
 @login_required
 def platform_dashboard(request):
     if not request.user.is_superuser:
@@ -42,16 +43,25 @@ def platform_dashboard(request):
 
     return render(request, "account/platform_dashboard.html", context)
 
-    # return render(
-    #     request,
-    #     "account/platform_dashboard.html",
-    #     {
-    #         "plans": plans,
-    #         "companies": companies
-    #     }
-    # )
-    #return render(request, "account/platform_dashboard.html")
+# ==== Company platform Dashboard ====
+@login_required
+def company_dashboard(request):
+    if request.user.role != "COMPANY_ADMIN":
+        return redirect("account:platform-login")
 
+    return render(request, "account/company_dashboard.html")
+
+
+# ==== Employee platform Dashboard ====
+@login_required
+def employee_dashboard(request):
+    if request.user.role != "EMPLOYEE":
+        return redirect("account:platform-login")
+
+    return render(request, "account/employee_dashboard.html")
+
+
+# ==== login method ====
 def platform_login(request):
     # اذا مسجل دخول ينقله لصفحة الدشبورد للبلاتفورم 
     # if request.user.is_authenticated and request.user.is_superuser:
@@ -61,16 +71,36 @@ def platform_login(request):
         password = request.POST.get("password")
 
         user = authenticate(request, username=username, password=password)
-
-        if user and user.is_superuser:
+        if user:
             login(request, user)
-            return redirect("account:platform-dashboard")
+
+            # Platform Admin
+            if user.is_superuser:
+                return redirect("account:platform-dashboard")
+
+            # Company Admin
+            if user.role == "COMPANY_ADMIN":
+                return redirect("account:company-dashboard")
+
+            # Employee 
+            if user.role == "EMPLOYEE":
+                return redirect("account:employee-dashboard")
 
         return render(request, "account/login.html", {
             "error": "Invalid email or password"
         })
 
     return render(request, "account/login.html")
+
+    #     if user and user.is_superuser:
+    #         login(request, user)
+    #         return redirect("account:platform-dashboard")
+
+    #     return render(request, "account/login.html", {
+    #         "error": "Invalid email or password"
+    #     })
+
+    # return render(request, "account/login.html")
 
 # ==== admin platform create company ====
 @login_required
@@ -127,3 +157,27 @@ def logout_view(request):
     logout(request)
     return redirect("account:platform-login")
 
+# ====== activate account =====
+def activate_account(request, token):
+    try:
+        user = User.objects.get(activation_token=token)
+    except User.DoesNotExist:
+        return render(request, "account/activation_invalid.html")
+
+    if request.method == "POST":
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+
+        if password != confirm_password:
+            return render(request, "account/activate_account.html", {
+                "error": "Passwords do not match"
+            })
+
+        user.set_password(password)
+        user.is_active = True
+        user.activation_token = None
+        user.save()
+
+        return redirect("account:platform-login")
+
+    return render(request, "account/activate_account.html")
