@@ -89,4 +89,13 @@ body{
     width: auto;       
     display: block;    
 }
+
+/* Disable hover underline on mobile */
+@media (max-width: 991px) {
+  .nav-secondary:hover::after {
+    opacity: 0 !important;
+  }
+}
+
+
   

@@ -1,18 +1,171 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Create Company</title>
-</head>
-<body>
-    <h2>Create New Company</h2>
+{% extends "core/base.html" %}
+{% load static %}
 
-    <form method="post">
+{% block title %}Create Company{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px;">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-0">Create Company</h3>
+            <small class="text-muted">Create a company and its super admin in one step.</small>
+        </div>
+        <a href="{% url 'account:platform-dashboard' %}" class="btn btn-outline-dark">
+            Back
+        </a>
+    </div>
+
+    <!-- ✅ Success Message Only -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} mb-3">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" class="row g-4">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Next</button>
-    </form>
 
-    <br>
-    <a href="{% url 'account:platform-dashboard' %}">Back to Dashboard</a>
-</body>
-</html>
+        <!-- ================= Company Info ================= -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="fw-semibold mb-3">Company Information</h5>
+
+                    <!-- Company Name -->
+                    <div class="mb-3">
+                        <label class="form-label small">Company Name</label>
+                        <input
+                            type="text"
+                            name="name"
+                            value="{{ company_form.name.value|default:'' }}"
+                            class="form-control {% if company_form.name.errors %}is-invalid{% endif %}"
+                            required
+                        >
+                        {% for error in company_form.name.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Email Domain -->
+                    <div class="mb-3">
+                        <label class="form-label small">Company Email Domain</label>
+                        <input
+                            type="text"
+                            name="email_domain"
+                            placeholder="example.com"
+                            value="{{ company_form.email_domain.value|default:'' }}"
+                            class="form-control {% if company_form.email_domain.errors %}is-invalid{% endif %}"
+                            required
+                        >
+                        {% for error in company_form.email_domain.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Subscription Plan -->
+                    <div class="mb-3">
+                        <label class="form-label small">Subscription Plan</label>
+                        <select
+                            name="subscription_plan"
+                            class="form-select {% if company_form.subscription_plan.errors %}is-invalid{% endif %}"
+                        >
+                            {% for option in company_form.subscription_plan %}
+                                {{ option }}
+                            {% endfor %}
+                        </select>
+                        {% for error in company_form.subscription_plan.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- License Dates -->
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small">License Start Date</label>
+                            <input
+                                type="date"
+                                name="license_start_date"
+                                value="{{ company_form.license_start_date.value|default:'' }}"
+                                class="form-control {% if company_form.license_start_date.errors %}is-invalid{% endif %}"
+                                required
+                            >
+                            {% for error in company_form.license_start_date.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small">License End Date</label>
+                            <input
+                                type="date"
+                                name="license_end_date"
+                                value="{{ company_form.license_end_date.value|default:'' }}"
+                                class="form-control {% if company_form.license_end_date.errors %}is-invalid{% endif %}"
+                                required
+                            >
+                            {% for error in company_form.license_end_date.errors %}
+                                <div class="invalid-feedback">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= Super Admin Info ================= -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="fw-semibold mb-3">Company Super Admin</h5>
+
+                    <!-- Username -->
+                    <div class="mb-3">
+                        <label class="form-label small">Username</label>
+                        <input
+                            type="text"
+                            name="username"
+                            value="{{ admin_form.username.value|default:'' }}"
+                            class="form-control {% if admin_form.username.errors %}is-invalid{% endif %}"
+                            required
+                        >
+                        {% for error in admin_form.username.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label class="form-label small">Admin Email</label>
+                        <input
+                            type="email"
+                            name="email"
+                            value="{{ admin_form.email.value|default:'' }}"
+                            class="form-control {% if admin_form.email.errors %}is-invalid{% endif %}"
+                            required
+                        >
+                        {% for error in admin_form.email.errors %}
+                            <div class="invalid-feedback">{{ error }}</div>
+                        {% endfor %}
+                    </div>
+
+                    <small class="text-muted">
+                        The admin will receive an activation email to set a password.
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="col-12 d-flex justify-content-end">
+            <button type="submit" class="btn btn-dark px-4">
+                Create & Send Activation Email
+            </button>
+        </div>
+
+    </form>
+</div>
+{% endblock %}

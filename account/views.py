@@ -1,17 +1,16 @@
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
-from .forms import CompanyForm
+from .forms import CompanyForm, SuperAdminForm
 from django.contrib.auth.decorators import login_required
 import uuid
-from .forms import SuperAdminForm
-from .models import Company
+from .models import Company, User
 from .services import send_activation_email
 from django.shortcuts import get_object_or_404
-from django.contrib.auth import logout
+# from django.contrib.auth import logout
 from .models import SubscriptionPlan
 from django.utils import timezone
-from .models import User
-
+from django.db import transaction
+from django.contrib import messages
 
 # ==== admin platform Dashboard ====
 @login_required
@@ -109,47 +108,50 @@ def create_company(request):
         return redirect("account:platform-login")
 
     if request.method == "POST":
-        form = CompanyForm(request.POST)
-        if form.is_valid():
-            # company = form.save()
-            company = form.save(commit=False)
-            company.save()
-            # create superadmin for company
-            return redirect("account:create-super-admin", company_id=company.id)
+        company_form = CompanyForm(request.POST)
+        admin_form = SuperAdminForm(request.POST)
+
+        if company_form.is_valid() and admin_form.is_valid():
+
+            company_domain = company_form.cleaned_data["email_domain"]
+            admin_email = admin_form.cleaned_data["email"]
+
+            if not admin_email.endswith("@" + company_domain):
+                admin_form.add_error(
+                    "email",
+                    "Admin email must belong to the company domain."
+                )
+
+            else:
+                with transaction.atomic():
+                    # 1) Create company
+                    company = company_form.save()
+
+                    # 2) Create company super admin
+                    user = admin_form.save(commit=False)
+                    user.role = "COMPANY_ADMIN"
+                    user.company = company
+                    user.is_active = False
+                    user.set_unusable_password()
+                    user.activation_token = str(uuid.uuid4())
+                    user.save()
+
+                    # 3) Send activation email
+                    send_activation_email(user)
+
+                messages.success(
+                    request,
+                    f"Company created successfully. Activation email sent to {user.email}."
+                )
+                return redirect("account:create-company")
+
     else:
-        form = CompanyForm()
+        company_form = CompanyForm()
+        admin_form = SuperAdminForm()
 
-    return render(request, "account/create_company.html", {"form": form})
-
-@login_required
-def create_super_admin(request, company_id):
-    if not request.user.is_superuser:
-        return redirect("account:platform-login")
-
-    company = get_object_or_404(Company, id=company_id)
-
-    if request.method == "POST":
-        form = SuperAdminForm(request.POST)
-        if form.is_valid():
-            user = form.save(commit=False)
-            user.role = "COMPANY_ADMIN"
-            user.company = company
-            user.is_active = False
-            user.set_unusable_password()
-            user.activation_token = uuid.uuid4()
-            user.save()
-
-            send_activation_email(user)
-
-            return render(request, "account/super_admin_created.html", {
-                "email": user.email
-            })
-    else:
-        form = SuperAdminForm()
-
-    return render(request, "account/create_super_admin.html", {
-        "form": form,
-        "company": company
+    return render(request, "account/create_company.html", {
+        "company_form": company_form,
+        "admin_form": admin_form,
     })
 
 # ==== Logout =====

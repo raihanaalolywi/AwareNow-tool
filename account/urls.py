@@ -8,11 +8,11 @@ urlpatterns = [
     path("company/dashboard/", views.company_dashboard, name="company-dashboard"),
     path("employee/dashboard/", views.employee_dashboard, name="employee-dashboard"),
     path("companies/create/", views.create_company, name="create-company"),
-    path(
-    "companies/<int:company_id>/super-admin/",
-    views.create_super_admin,
-    name="create-super-admin"
-    ),
+    # path(
+    # "companies/<int:company_id>/super-admin/",
+    # views.create_super_admin,
+    # name="create-super-admin"
+    # ),
     path("logout/", views.logout_view, name="logout"),
     path(
     "activate/<uuid:token>/",
