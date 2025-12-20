@@ -46,6 +46,18 @@ class Company(models.Model):
             return "ACTIVE"
         return "EXPIRED"
 
+# ====== User Group ======
+class CompanyGroup(models.Model):
+    company = models.ForeignKey(Company, on_delete=models.CASCADE, related_name="company_groups")
+    name = models.CharField(max_length=100)
+    is_system = models.BooleanField(default=False)  # عشان Staff
+
+    class Meta:
+        unique_together = ("company", "name")
+
+    def __str__(self):
+        return f"{self.company.name} - {self.name}"
+
 # ==== User Model ====
 class User(AbstractUser):
     ROLE_CHOICES = (
@@ -75,6 +87,20 @@ class User(AbstractUser):
         blank=True
     )
     
+    is_disabled = models.BooleanField(default=False)
+
+    original_email = models.EmailField(
+        null=True,
+        blank=True,
+        help_text="Stores original email when user is soft-deleted"
+    )
+    # ===== connect user with group =====
+    company_groups = models.ManyToManyField(
+    CompanyGroup,
+    blank=True,
+    related_name="users"
+    )
+
     @property
     def is_platform_admin(self):
         return self.role == 'PLATFORM_ADMIN'

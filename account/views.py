@@ -50,7 +50,6 @@ def company_dashboard(request):
 
     return render(request, "account/company_dashboard.html")
 
-
 # ==== Employee platform Dashboard ====
 @login_required
 def employee_dashboard(request):
@@ -90,16 +89,6 @@ def platform_login(request):
         })
 
     return render(request, "account/login.html")
-
-    #     if user and user.is_superuser:
-    #         login(request, user)
-    #         return redirect("account:platform-dashboard")
-
-    #     return render(request, "account/login.html", {
-    #         "error": "Invalid email or password"
-    #     })
-
-    # return render(request, "account/login.html")
 
 # ==== admin platform create company ====
 @login_required
@@ -166,6 +155,10 @@ def activate_account(request, token):
     except User.DoesNotExist:
         return render(request, "account/activation_invalid.html")
 
+    # ⛔️ منع تفعيل حساب Disabled
+    if user.is_disabled:
+        return render(request, "account/activation_invalid.html")
+
     if request.method == "POST":
         password = request.POST.get("password")
         confirm_password = request.POST.get("confirm_password")
@@ -183,3 +176,88 @@ def activate_account(request, token):
         return redirect("account:platform-login")
 
     return render(request, "account/activate_account.html")
+
+# ======= Company User ========
+@login_required
+def company_users(request):
+    if request.user.role != "COMPANY_ADMIN":
+        return redirect("account:platform-login")
+
+    company = request.user.company
+
+    users = User.objects.filter(
+        company=company
+    ).exclude(role="PLATFORM_ADMIN")
+
+    # ===== Filters (GET only) =====
+    status_filter = request.GET.get("status")
+    role_filter = request.GET.get("role")
+
+    if status_filter == "ACTIVE":
+        users = users.filter(is_active=True, is_disabled=False)
+
+    elif status_filter == "PENDING":
+        users = users.filter(is_active=False, is_disabled=False)
+
+    elif status_filter == "DISABLED":
+        users = users.filter(is_disabled=True)
+
+    if role_filter in ["COMPANY_ADMIN", "EMPLOYEE"]:
+        users = users.filter(role=role_filter)
+
+    from .forms import CompanyUserCreateForm
+    from .services import get_or_create_staff_group
+    import uuid
+
+    if request.method == "POST":
+        form = CompanyUserCreateForm(request.POST, company=company)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.company = company
+            user.username = user.email
+            user.is_active = False
+            user.set_unusable_password()
+            user.activation_token = str(uuid.uuid4())
+            user.save()
+
+            staff_group = get_or_create_staff_group(company)
+            user.company_groups.add(staff_group)
+
+            for group in form.cleaned_data["company_groups"]:
+                user.company_groups.add(group)
+
+            send_activation_email(user)
+            messages.success(request, "User created successfully.")
+            return redirect("account:company-users")
+    else:
+        form = CompanyUserCreateForm(company=company)
+
+    return render(request, "account/company_users.html", {
+        "users": users,
+        "form": form,
+    })
+
+@login_required
+def toggle_user_active(request, user_id):
+    if request.user.role != "COMPANY_ADMIN":
+        return redirect("account:platform-login")
+
+    user = get_object_or_404(
+        User,
+        id=user_id,
+        company=request.user.company
+    )
+
+    if user == request.user:
+        messages.error(request, "You cannot disable yourself.")
+        return redirect("account:company-users")
+
+    # 🔴 Soft Disable
+    if user.is_active and not user.is_disabled:
+        user.original_email = user.email
+        user.email = f"disabled_{user.id}_{user.email}"
+        user.is_active = False
+        user.is_disabled = True
+        user.save()
+
+    return redirect("account:company-users")

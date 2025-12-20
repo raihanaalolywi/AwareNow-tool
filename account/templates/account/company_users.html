@@ -1,0 +1,329 @@
+{% extends "core/base.html" %}
+
+{% block title %}Company Users{% endblock %}
+
+{% block content %}
+<div class="container">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-0">Company Users</h3>
+            <small class="text-muted">
+                Manage admins and employees
+            </small>
+        </div>
+
+        <button class="btn btn-dark" data-bs-toggle="collapse" data-bs-target="#createUserForm">
+            + Create User
+        </button>
+    </div>
+
+    <!-- Create User Form -->
+    <div id="createUserForm" class="collapse mb-4">
+        <div class="card border-0 shadow-sm p-4">
+            <h5 class="fw-semibold mb-3">Create New User</h5>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="row g-3">
+                    <!-- <div class="col-md-6">
+                        <label class="form-label">First Name</label>
+                        {{ form.first_name }}
+                    </div> -->
+                    <div class="col-md-6">
+                        <label class="form-label">First Name</label>
+                        <input
+                            type="text"
+                            name="first_name"
+                            value="{{ form.first_name.value|default:'' }}"
+                            class="form-control"
+                            required
+                        >
+                    </div>
+                    
+                    <!-- <div class="col-md-6">
+                        <label class="form-label">Last Name</label>
+                        {{ form.last_name }}
+                    </div> -->
+                    <div class="col-md-6">
+                        <label class="form-label">Last Name</label>
+                        <input
+                            type="text"
+                            name="last_name"
+                            value="{{ form.last_name.value|default:'' }}"
+                            class="form-control"
+                            required
+                        >
+                    </div>
+                    
+
+                    <!-- <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        {{ form.email }}
+                    </div> -->
+
+                    <div class="col-md-6">
+                        <label class="form-label">Email</label>
+                        <input
+                            type="email"
+                            name="email"
+                            value="{{ form.email.value|default:'' }}"
+                            class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                            required
+                        >
+                        {% for error in form.email.errors %}
+                            <div class="invalid-feedback">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+
+                    <!-- <div class="col-md-6">
+                        <label class="form-label">Role</label>
+                        {{ form.role }}
+                    </div> -->
+                    <div class="col-md-6">
+                        <label class="form-label">Role</label>
+                        <select
+                            name="role"
+                            class="form-select {% if form.role.errors %}is-invalid{% endif %}"
+                            required
+                        >
+                            <option value="">---------</option>
+                            {% for value, label in form.fields.role.choices %}
+                                <option value="{{ value }}"
+                                    {% if form.role.value == value %}selected{% endif %}
+                                >
+                                    {{ label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    
+                        {% for error in form.role.errors %}
+                            <div class="invalid-feedback">
+                                {{ error }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    
+
+                    <!-- <div class="col-md-6">
+                        <label class="form-label">Department</label>
+                        {{ form.department }}
+                    </div> -->
+                    <div class="col-md-6">
+                        <label class="form-label">Department</label>
+                        <input
+                            type="text"
+                            name="department"
+                            value="{{ form.department.value|default:'' }}"
+                            class="form-control "
+                            required
+                        >
+                    </div>
+                    
+
+                    <!-- <div class="col-md-12">
+                        <label class="form-label">Groups</label>
+                        {{ form.company_groups }}
+                        <small class="text-muted d-block mt-1">
+                            User will always be added to <strong>Staff</strong> group by default
+                        </small>
+                    </div> -->
+                    <div class="col-md-12">
+                        <label class="form-label">Groups</label>
+                    
+                        {% if form.company_groups %}
+                            {{ form.company_groups }}
+                        {% else %}
+                            <span class="text-muted">No groups created yet</span>
+                        {% endif %}
+                    
+                        <small class="text-muted d-block mt-1">
+                            User will always be added to <strong>Staff</strong> group by default
+                        </small>
+                    </div>
+                    
+
+                </div>
+
+                <div class="mt-4 d-flex justify-content-end">
+                    <button type="submit" class="btn btn-success">
+                        Create User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <form method="get" class="d-flex gap-2 mb-3">
+
+        <!-- Status Filter -->
+        <select name="status" class="form-select form-select-sm w-auto">
+            <option value="">All Status</option>
+            <option value="ACTIVE" {% if request.GET.status == "ACTIVE" %}selected{% endif %}>
+                Active
+            </option>
+            <option value="PENDING" {% if request.GET.status == "PENDING" %}selected{% endif %}>
+                Pending
+            </option>
+            <option value="DISABLED" {% if request.GET.status == "DISABLED" %}selected{% endif %}>
+                Disabled
+            </option>
+        </select>
+    
+        <!-- Role Filter -->
+        <select name="role" class="form-select form-select-sm w-auto">
+            <option value="">All Roles</option>
+            <option value="COMPANY_ADMIN" {% if request.GET.role == "COMPANY_ADMIN" %}selected{% endif %}>
+                Admin
+            </option>
+            <option value="EMPLOYEE" {% if request.GET.role == "EMPLOYEE" %}selected{% endif %}>
+                Employee
+            </option>
+        </select>
+    
+        <!-- Submit -->
+        <button type="submit" class="btn btn-sm btn-outline-dark">
+            Filter
+        </button>
+    </form>
+    
+    <!-- Users Table -->
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table mb-0 align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Department</th>
+                        <th>Groups</th>
+                        <th>Status</th>
+                        <th class="text-end">Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            {{ user.get_full_name|default:user.username }}
+                        </td>
+
+                        <td>{{ user.email }}</td>
+
+                        <td>
+                            {% if user.role == "COMPANY_ADMIN" %}
+                                <span class="badge bg-dark">Admin</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Employee</span>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {{ user.department|default:"-" }}
+                        </td>
+
+                        <td>
+                            <!-- {% for group in user.company_groups.all %}
+                                <span class="badge bg-light text-dark border">
+                                    {{ group.name }}
+                                </span>
+                            {% empty %}
+                                <span class="text-muted">-</span>
+                            {% endfor %} -->
+                            {% for group in user.company_groups.all %}
+                                {% if not group.is_system %}
+                                    <span class="badge bg-light text-dark border">
+                                        {{ group.name }}
+                                    </span>
+                                {% endif %}
+                            {% empty %}
+                                <span class="text-muted">-</span>
+                            {% endfor %}
+
+                        </td>
+
+                        <!-- <td>
+                            {% if user.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">Pending</span>
+                            {% endif %}
+                        </td> -->
+
+                        <td>
+                            {% if user.is_disabled %}
+                                <span class="badge bg-danger">Disabled</span>
+                            {% elif user.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-end">
+                            {% if user.is_active and not user.is_disabled and user != request.user %}
+                                <a href="{% url 'account:toggle-user-active' user.id %}"
+                                   class="btn btn-sm btn-outline-danger">
+                                    Disable
+                                </a>
+                            {% else %}
+                                <span class="text-muted small">-</span>
+                            {% endif %}
+                        </td>
+                        
+                        
+                        <!-- <td class="text-end">
+                            {% if user.is_active and user != request.user %}
+                                <a href="{% url 'account:toggle-user-active' user.id %}"
+                                   class="btn btn-sm btn-outline-danger">
+                                    Disable
+                                </a>
+                            {% else %}
+                                <span class="text-muted small">-</span>
+                            {% endif %}
+                        </td> -->
+
+                        
+                        <!-- <td class="text-end">
+                            {% if user != request.user and user.is_active %}
+                                <a href="{% url 'account:toggle-user-active' user.id %}"
+                                   class="btn btn-sm btn-outline-danger">
+                                    Disable
+                                </a>
+                            {% else %}
+                                <span class="text-muted small">-</span>
+                            {% endif %}
+                        </td> -->
+                        
+                        <!-- <td class="text-end">
+                            {% if user != request.user %}
+                                <a href="{% url 'account:toggle-user-active' user.id %}"
+                                class="btn btn-sm {% if user.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}">
+                                    {% if user.is_active %}Disable{% else %}Enable{% endif %}
+                                </a>
+                            {% else %}
+                                <span class="text-muted small">You</span>
+                            {% endif %}
+                        </td> -->
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            No users found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
