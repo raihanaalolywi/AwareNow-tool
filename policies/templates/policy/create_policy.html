@@ -1,6 +1,15 @@
+{% extends "core/base.html" %}
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/create_policy.css' %}">
 
+{% block title %}
+Create Policy
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/create_policy.css' %}">
+{% endblock %}
+
+{% block content %}
 <div class="cp-page">
 
     <!-- Header -->
@@ -39,7 +48,7 @@
 
             <!-- User Group -->
             <div class="cp-group">
-                <select name="group" class="cp-select">
+                <select name="group" class="cp-select" required>
                     <option selected disabled>Select User Group</option>
                     {% for group in groups %}
                         <option value="{{ group.id }}">{{ group.name }}</option>
@@ -56,3 +65,4 @@
 
     </div>
 </div>
+{% endblock %}

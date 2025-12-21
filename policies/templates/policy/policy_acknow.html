@@ -1,6 +1,15 @@
+{% extends "core/base.html" %}
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/policy_acknow.css' %}">
 
+{% block title %}
+Policy Acknowledgement
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/policy_acknow.css' %}">
+{% endblock %}
+
+{% block content %}
 <div class="ack-page">
     <div class="ack-box">
 
@@ -27,3 +36,4 @@
 
     </div>
 </div>
+{% endblock %}

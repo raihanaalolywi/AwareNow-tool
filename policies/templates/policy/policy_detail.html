@@ -1,6 +1,15 @@
+{% extends "core/base.html" %}
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/policy_detail.css' %}">
 
+{% block title %}
+Policy Details
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/policy_detail.css' %}">
+{% endblock %}
+
+{% block content %}
 <div class="policy-detail-page">
 
     <div class="policy-box">
@@ -41,3 +50,4 @@
     </div>
 
 </div>
+{% endblock %}

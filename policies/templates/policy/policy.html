@@ -1,6 +1,15 @@
+{% extends "core/base.html" %}
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/policy.css' %}">
 
+{% block title %}
+Policies
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/policy.css' %}">
+{% endblock %}
+
+{% block content %}
 <div class="pl-page">
 
     <!-- Header -->
@@ -61,3 +70,4 @@
 
     </div>
 </div>
+{% endblock %}
