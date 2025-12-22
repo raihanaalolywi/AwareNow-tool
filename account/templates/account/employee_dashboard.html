@@ -13,17 +13,12 @@
                 Welcome back, {{ request.user.get_full_name|default:request.user.username }}
             </p>
         </div>
-        <div>
-            <span class="badge bg-primary">
-                {{ total_courses }} Course{{ total_courses|pluralize }}
-            </span>
-        </div>
     </div>
 
     <!-- Statistics -->
-    <div class="row mb-4">
+    <div class="row mb-4 d-flex justify-content-between align-items-center px-4">
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm bg-gradient-primary text-white">
+            <div class="card border-0 shadow-sm bg-gradient-primary text-dark">
                 <div class="card-body">
                     <h6 class="mb-2">Assigned</h6>
                     <h2 class="fw-bold">{{ assigned_count }}</h2>
@@ -41,7 +36,7 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm bg-gradient-success text-white">
+            <div class="card border-0 shadow-sm bg-gradient-success text-dark">
                 <div class="card-body">
                     <h6 class="mb-2">Completed</h6>
                     <h2 class="fw-bold">{{ completed_count }}</h2>
@@ -49,17 +44,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm bg-light">
-                <div class="card-body text-center">
-                    <h6 class="text-muted mb-2">Completion</h6>
-                    <div class="progress mb-2" style="height: 8px;">
-                        <div class="progress-bar bg-dark" style="width: {{ completion_rate }}%"></div>
-                    </div>
-                    <h5 class="fw-bold mb-0">{{ completion_rate }}%</h5>
-                </div>
-            </div>
-        </div>
+
     </div>
 
     <!-- Course Cards Grid -->
@@ -95,7 +80,7 @@
                         </div>
                         
                         <!-- Progress Ring -->
-                        {% if assignment.status == 'in_progress' %}
+                        <!-- {% if assignment.status == 'in_progress' %}
                         <div class="position-absolute bottom-0 start-0 m-2">
                             <div class="progress-ring" data-progress="{{ assignment.progress_percentage }}">
                                 <svg width="40" height="40">
@@ -108,7 +93,7 @@
                                 <span class="progress-text">{{ assignment.progress_percentage|floatformat:0 }}%</span>
                             </div>
                         </div>
-                        {% endif %}
+                        {% endif %} -->
                     </div>
 
                     <!-- Card Body -->
