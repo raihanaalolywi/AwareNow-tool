@@ -10,7 +10,9 @@ from .models import SubscriptionPlan
 from django.utils import timezone
 from django.db import transaction
 from django.contrib import messages
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Avg
+from django.http import JsonResponse
+import json
 from courses.models import CompanyCourseAssignment, Course, EmployeeCourseAssignment, EmployeeCourseProgress, QuizAttempt, CompanyCourseGroup
 
 # ==== admin platform Dashboard ====
@@ -275,8 +277,144 @@ def course_employee_progress(request, course_id):
 def employee_dashboard(request):
     if request.user.role != "EMPLOYEE":
         return redirect("account:platform-login")
+    
+    try:
+        # Get employee profile
+        employee_profile = EmployeeProfile.objects.get(user=request.user)
+        
+        # Get all course assignments for this employee
+        assignments = EmployeeCourseAssignment.objects.filter(
+            employee=employee_profile
+        ).select_related('course', 'course__category').order_by('-assigned_at')
+        
+        # Calculate statistics
+        total_courses = assignments.count()
+        assigned_count = assignments.filter(status='assigned').count()
+        in_progress_count = assignments.filter(status='in_progress').count()
+        completed_count = assignments.filter(status='completed').count()
+        
+        # Calculate completion rate
+        if total_courses > 0:
+            completion_rate = int((completed_count / total_courses) * 100)
+        else:
+            completion_rate = 0
+        
+        context = {
+            'total_courses': total_courses,
+            'assigned_count': assigned_count,
+            'in_progress_count': in_progress_count,
+            'completed_count': completed_count,
+            'completion_rate': completion_rate,
+            'courses': assignments,
+            'employee_profile': employee_profile,
+        }
+        
+        return render(request, 'account/employee_dashboard.html', context)
+        
+    except EmployeeProfile.DoesNotExist:
+        messages.error(request, "Employee profile not found. Please contact administrator.")
+        return redirect("account:platform-login")
 
-    return render(request, "account/employee_dashboard.html")
+@login_required
+def view_course(request, course_id):
+    """View a specific course and track progress"""
+    if request.user.role != "EMPLOYEE":
+        return redirect("account:platform-login")
+    
+    try:
+        employee_profile = EmployeeProfile.objects.get(user=request.user)
+        course = get_object_or_404(Course, id=course_id)
+        
+        # Get or create assignment
+        assignment, created = EmployeeCourseAssignment.objects.get_or_create(
+            employee=employee_profile,
+            course=course,
+            defaults={
+                'status': 'assigned',
+                'assigned_by': request.user,
+                'assigned_at': timezone.now()
+            }
+        )
+        
+        # Update last accessed time
+        assignment.last_accessed = timezone.now()
+        assignment.save()
+        
+        # Calculate time spent (in minutes)
+        time_spent_minutes = 0
+        if assignment.started_at:
+            time_spent = timezone.now() - assignment.started_at
+            time_spent_minutes = int(time_spent.total_seconds() / 60)
+        
+        context = {
+            'course': course,
+            'assignment': assignment,
+            'time_spent_minutes': time_spent_minutes,
+            'employee_profile': employee_profile,
+        }
+        
+        return render(request, 'account/view_course.html', context)
+        
+    except EmployeeProfile.DoesNotExist:
+        messages.error(request, "Employee profile not found.")
+        return redirect("account:platform-login")
+
+@login_required
+def update_course_progress(request, assignment_id):
+    """Update course progress via AJAX"""
+    if request.user.role != "EMPLOYEE" or request.method != 'POST':
+        return JsonResponse({'success': False})
+    
+    try:
+        assignment = EmployeeCourseAssignment.objects.get(
+            id=assignment_id,
+            employee__user=request.user
+        )
+        
+        data = json.loads(request.body)
+        progress = float(data.get('progress', 0))
+        
+        # Update progress
+        assignment.progress_percentage = min(100, max(0, progress))
+        assignment.last_accessed = timezone.now()
+        
+        # Update status based on progress
+        if progress >= 100:
+            assignment.status = 'completed'
+            assignment.completed_at = timezone.now()
+        elif progress > 0 and assignment.status == 'assigned':
+            assignment.status = 'in_progress'
+            if not assignment.started_at:
+                assignment.started_at = timezone.now()
+        
+        assignment.save()
+        
+        return JsonResponse({'success': True, 'progress': assignment.progress_percentage})
+        
+    except (EmployeeCourseAssignment.DoesNotExist, EmployeeProfile.DoesNotExist):
+        return JsonResponse({'success': False})
+
+@login_required
+def mark_course_complete(request, assignment_id):
+    """Mark a course as complete"""
+    if request.user.role != "EMPLOYEE" or request.method != 'POST':
+        return JsonResponse({'success': False})
+    
+    try:
+        assignment = EmployeeCourseAssignment.objects.get(
+            id=assignment_id,
+            employee__user=request.user
+        )
+        
+        assignment.status = 'completed'
+        assignment.progress_percentage = 100
+        assignment.completed_at = timezone.now()
+        assignment.save()
+        
+        return JsonResponse({'success': True})
+        
+    except (EmployeeCourseAssignment.DoesNotExist, EmployeeProfile.DoesNotExist):
+        return JsonResponse({'success': False})
 
 
 # ==== login method ====
@@ -302,7 +440,7 @@ def platform_login(request):
 
             # Employee 
             if user.role == "EMPLOYEE":
-                return redirect("account:employee-dashboard")
+                return redirect("account:employee_dashboard")
 
         return render(request, "account/login.html", {
             "error": "Invalid email or password"

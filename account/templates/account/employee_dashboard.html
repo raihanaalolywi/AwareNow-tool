@@ -1,0 +1,259 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}My Courses - Employee Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-0">My Learning Dashboard</h3>
+            <p class="text-muted mb-0">
+                Welcome back, {{ request.user.get_full_name|default:request.user.username }}
+            </p>
+        </div>
+        <div>
+            <span class="badge bg-primary">
+                {{ total_courses }} Course{{ total_courses|pluralize }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-gradient-primary text-white">
+                <div class="card-body">
+                    <h6 class="mb-2">Assigned</h6>
+                    <h2 class="fw-bold">{{ assigned_count }}</h2>
+                    <small>Courses to start</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-gradient-warning text-dark">
+                <div class="card-body">
+                    <h6 class="mb-2">In Progress</h6>
+                    <h2 class="fw-bold">{{ in_progress_count }}</h2>
+                    <small>Currently learning</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-gradient-success text-white">
+                <div class="card-body">
+                    <h6 class="mb-2">Completed</h6>
+                    <h2 class="fw-bold">{{ completed_count }}</h2>
+                    <small>Finished courses</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body text-center">
+                    <h6 class="text-muted mb-2">Completion</h6>
+                    <div class="progress mb-2" style="height: 8px;">
+                        <div class="progress-bar bg-dark" style="width: {{ completion_rate }}%"></div>
+                    </div>
+                    <h5 class="fw-bold mb-0">{{ completion_rate }}%</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Cards Grid -->
+    <div class="row">
+        {% if courses %}
+            {% for assignment in courses %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card course-card border-0 shadow-sm h-100" 
+                     onclick="window.location='{% url 'account:view_course' assignment.course.id %}'"
+                     style="cursor: pointer; transition: transform 0.2s;">
+                    <!-- Thumbnail -->
+                    <div class="position-relative">
+                        {% if assignment.course.thumbnail %}
+                        <img src="{{ assignment.course.thumbnail.url }}" 
+                             class="card-img-top" 
+                             alt="{{ assignment.course.title }}"
+                             style="height: 180px; object-fit: cover;">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
+                             style="height: 180px;">
+                            <i class="fas fa-video fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Status Badge -->
+                        <div class="position-absolute top-0 end-0 m-2">
+                            <span class="badge 
+                                {% if assignment.status == 'completed' %}bg-success
+                                {% elif assignment.status == 'in_progress' %}bg-warning text-dark
+                                {% else %}bg-secondary{% endif %}">
+                                {{ assignment.get_status_display }}
+                            </span>
+                        </div>
+                        
+                        <!-- Progress Ring -->
+                        {% if assignment.status == 'in_progress' %}
+                        <div class="position-absolute bottom-0 start-0 m-2">
+                            <div class="progress-ring" data-progress="{{ assignment.progress_percentage }}">
+                                <svg width="40" height="40">
+                                    <circle class="progress-ring-bg" cx="20" cy="20" r="15" fill="transparent" 
+                                            stroke="#e9ecef" stroke-width="3"/>
+                                    <circle class="progress-ring-circle" cx="20" cy="20" r="15" fill="transparent" 
+                                            stroke="#0d6efd" stroke-width="3" stroke-linecap="round"
+                                            stroke-dasharray="94.2" stroke-dashoffset="{% widthratio 100|add:"-1" 100 assignment.progress_percentage %}"/>
+                                </svg>
+                                <span class="progress-text">{{ assignment.progress_percentage|floatformat:0 }}%</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Card Body -->
+                    <div class="card-body d-flex flex-column">
+                        <div class="mb-2">
+                            <span class="badge bg-light text-dark mb-2">
+                                {% if assignment.course.category %}
+                                    {{ assignment.course.category.name }}
+                                {% else %}
+                                    Uncategorized
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <h5 class="card-title fw-bold mb-2">{{ assignment.course.title }}</h5>
+                        
+                        <p class="card-text text-muted small flex-grow-1">
+                            {{ assignment.course.brief_description|truncatechars:120 }}
+                        </p>
+                        
+                        <div class="mt-auto">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-muted small">
+                                    <i class="fas fa-clock me-1"></i>
+                                    {{ assignment.course.video_duration_minutes }} min
+                                </div>
+                                <div class="text-muted small">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    Assigned {{ assignment.assigned_at|date:"M d, Y" }}
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                {% if assignment.status == 'assigned' %}
+                                <a href="{% url 'account:view_course' assignment.course.id %}" 
+                                   class="btn btn-dark w-100">
+                                    <i class="fas fa-play me-1"></i> Start Course
+                                </a>
+                                {% elif assignment.status == 'in_progress' %}
+                                <a href="{% url 'account:view_course' assignment.course.id %}" 
+                                   class="btn btn-primary w-100">
+                                    <i class="fas fa-play-circle me-1"></i> Continue Learning
+                                </a>
+                                {% elif assignment.status == 'completed' %}
+                                <button class="btn btn-outline-success w-100" disabled>
+                                    <i class="fas fa-check-circle me-1"></i> Completed
+                                </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-book-open fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">No courses assigned yet</h4>
+                    <p class="text-muted">Your administrator will assign courses to you soon.</p>
+                    <a href="#" class="btn btn-outline-dark mt-2">
+                        <i class="fas fa-sync-alt me-1"></i> Refresh
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add hover effect to course cards
+        document.querySelectorAll('.course-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 10px 20px rgba(0,0,0,0.1)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '';
+            });
+        });
+        
+        // Update progress rings
+        document.querySelectorAll('.progress-ring').forEach(ring => {
+            const progress = ring.getAttribute('data-progress');
+            const circle = ring.querySelector('.progress-ring-circle');
+            const radius = 15;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (progress / 100) * circumference;
+            
+            if (circle) {
+                circle.style.strokeDasharray = `${circumference} ${circumference}`;
+                circle.style.strokeDashoffset = offset;
+            }
+        });
+    });
+</script>
+
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%);
+    }
+    
+    .bg-gradient-warning {
+        background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    }
+    
+    .bg-gradient-success {
+        background: linear-gradient(135deg, #198754 0%, #146c43 100%);
+    }
+    
+    .course-card {
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    
+    .course-card:hover {
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
+    }
+    
+    .progress-ring {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .progress-text {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 10px;
+        font-weight: bold;
+        color: #0d6efd;
+    }
+    
+    .progress-ring-circle {
+        transition: stroke-dashoffset 0.5s ease;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+    }
+</style>
+{% endblock %}

@@ -210,6 +210,67 @@
 
 
       {% endif %}
+
+        <!-- ================= Employee ================= -->
+      {% if user.is_authenticated and user.role == "EMPLOYEE" %}
+
+      <!-- Desktop menu (Employee) -->
+      <ul class="navbar-nav align-items-center gap-3 d-none d-lg-flex">
+
+        <li class="nav-item">
+          <a class="nav-link nav-secondary {% if request.resolver_match.url_name == 'employee_policies' %}active-nav{% endif %}"
+              href="#">
+              Policies
+          </a>
+        </li>
+
+        <li class="nav-item">
+          <a class="nav-link nav-secondary {% if request.resolver_match.url_name == 'password_checker' %}active-nav{% endif %}"
+              href="#">
+              Password Checker
+          </a>
+        </li>
+
+        <li class="nav-item divider"></li>
+
+        <li class="nav-item">
+          <a class="nav-logout nav-link fw-normal"
+             href="{% url 'account:logout' %}">
+            logout
+          </a>
+        </li>
+
+      </ul>
+              <!-- Mobile menu (Employee) -->
+      <ul class="navbar-nav d-lg-none align-items-center">
+
+        <!-- Policies -->
+        <li class="nav-item">
+          <a class="nav-link nav-secondary text-center" 
+             href="#">
+            Policies
+          </a>
+        </li>
+
+        <!-- Password Checker -->
+        <li class="nav-item">
+          <a class="nav-link nav-secondary text-center" 
+             href="#">
+            Password Checker
+          </a>
+        </li>
+
+        <!-- Logout -->
+        <li class="nav-item mt-2">
+          <a class="nav-logout nav-link fw-normal text-center"
+            href="{% url 'account:logout' %}">
+            logout
+          </a>
+        </li>
+
+      </ul>
+
+      {% endif %}
     </div>
   </div>
 </nav>

@@ -1,0 +1,424 @@
+{% extends "core/base.html" %}
+{% load static %}
+{% load course_filters %}
+
+{% block title %}{{ course.title }} - Learning{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Course Header -->
+    <div class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-2">
+                            <li class="breadcrumb-item">
+                                <a href="{% url 'account:employee_dashboard' %}" class="text-white-50">
+                                    <i class="fas fa-arrow-left me-1"></i> My Courses
+                                </a>
+                            </li>
+                            <li class="breadcrumb-item active text-white" aria-current="page">
+                                {{ course.title|truncatechars:40 }}
+                            </li>
+                        </ol>
+                    </nav>
+                    <h1 class="h3 mb-0">{{ course.title }}</h1>
+                    <p class="text-white-50 mb-0">{{ course.category.name|default:"Uncategorized" }}</p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-{% if assignment.status == 'completed' %}success
+                                         {% elif assignment.status == 'in_progress' %}warning text-dark
+                                         {% else %}light text-dark{% endif %} fs-6">
+                        {{ assignment.get_status_display }}
+                    </span>
+                    <div class="mt-2">
+                        <small class="text-white-50">
+                            <i class="fas fa-clock me-1"></i>
+                            {{ course.video_duration_minutes }} minutes
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <div class="row">
+            <!-- Left: Video Player -->
+            <div class="col-lg-8 mb-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        <!-- Video Player -->
+                        <div class="ratio ratio-16x9 bg-dark">
+                            {% if course.video_url %}
+                                {% if 'youtube.com' in course.video_url or 'youtu.be' in course.video_url %}
+                                <iframe src="{{ course.video_url|youtube_embed }}" 
+                                        frameborder="0" 
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                        allowfullscreen>
+                                </iframe>
+                                {% elif 'vimeo.com' in course.video_url %}
+                                <iframe src="{{ course.video_url|vimeo_embed }}" 
+                                        frameborder="0" 
+                                        allow="autoplay; fullscreen; picture-in-picture" 
+                                        allowfullscreen>
+                                </iframe>
+                                {% else %}
+                                <video id="courseVideo" controls class="w-100 h-100">
+                                    <source src="{{ course.video_url }}" type="video/mp4">
+                                    Your browser does not support the video tag.
+                                </video>
+                                {% endif %}
+                            {% else %}
+                            <div class="d-flex flex-column align-items-center justify-content-center text-white">
+                                <i class="fas fa-video fa-4x mb-3"></i>
+                                <h5>Video content not available</h5>
+                                <p class="text-white-50">Please contact your administrator</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Video Controls -->
+                        <div class="p-3 border-top">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <button class="btn btn-outline-dark btn-sm" id="playPauseBtn">
+                                        <i class="fas fa-play me-1"></i> Play/Pause
+                                    </button>
+                                    <button class="btn btn-outline-dark btn-sm ms-2" id="fullscreenBtn">
+                                        <i class="fas fa-expand me-1"></i> Fullscreen
+                                    </button>
+                                </div>
+                                <div>
+                                    <span id="currentTime">0:00</span> / 
+                                    <span id="duration">{{ course.video_duration_minutes }}:00</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Progress Bar -->
+                            <div class="progress mt-2" style="height: 6px;">
+                                <div class="progress-bar bg-dark" id="videoProgress" style="width: 0%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course Description -->
+                <div class="card border-0 shadow-sm mt-4">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2 text-primary"></i>
+                            Course Description
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% if course.description %}
+                            {{ course.description|linebreaks }}
+                        {% else %}
+                            <p class="text-muted fst-italic">No description provided for this course.</p>
+                        {% endif %}
+                        
+                        <!-- Learning Objectives -->
+                        {% if course.learning_objectives %}
+                        <div class="mt-4">
+                            <h6 class="fw-bold mb-3">
+                                <i class="fas fa-bullseye me-2 text-success"></i>
+                                What You'll Learn
+                            </h6>
+                            <ul class="list-group list-group-flush">
+                                {% for objective in course.learning_objectives|learning_objectives_as_list %}
+                                <li class="list-group-item border-0 ps-0">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    {{ objective }}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Course Info & Navigation -->
+            <div class="col-lg-4">
+                <!-- Course Progress -->
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">
+                            <i class="fas fa-chart-line me-2 text-primary"></i>
+                            Your Progress
+                        </h6>
+                        
+                        <!-- Progress Ring -->
+                        <div class="text-center mb-3">
+                            <div class="position-relative d-inline-block">
+                                <svg width="120" height="120">
+                                    <circle cx="60" cy="60" r="54" fill="transparent" 
+                                            stroke="#e9ecef" stroke-width="8"/>
+                                    <circle id="mainProgressCircle" cx="60" cy="60" r="54" fill="transparent" 
+                                            stroke="#0d6efd" stroke-width="8" stroke-linecap="round"
+                                            stroke-dasharray="339.3" stroke-dashoffset="{% widthratio 100|add:"-1" 100 assignment.progress_percentage %}"/>
+                                </svg>
+                                <div class="position-absolute top-50 start-50 translate-middle">
+                                    <h2 class="fw-bold mb-0">{{ assignment.progress_percentage|floatformat:0 }}%</h2>
+                                    <small class="text-muted">Complete</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Progress Stats -->
+                        <div class="row text-center">
+                            <div class="col-4">
+                                <div class="border rounded p-2">
+                                    <small class="text-muted d-block">Started</small>
+                                    <strong class="d-block">
+                                        {{ assignment.started_at|date:"M d"|default:"-" }}
+                                    </strong>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border rounded p-2">
+                                    <small class="text-muted d-block">Last Viewed</small>
+                                    <strong class="d-block">
+                                        {{ assignment.last_accessed|date:"M d"|default:"-" }}
+                                    </strong>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="border rounded p-2">
+                                    <small class="text-muted d-block">Time Spent</small>
+                                    <strong class="d-block">
+                                        {{ time_spent_minutes|default:"0" }}m
+                                    </strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Course Materials -->
+                {% if course.materials.all %}
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0">
+                        <h6 class="mb-0">
+                            <i class="fas fa-paperclip me-2 text-primary"></i>
+                            Course Materials
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group list-group-flush">
+                            {% for material in course.materials.all %}
+                            <a href="{{ material.file.url }}" 
+                               class="list-group-item list-group-item-action border-0 px-0 py-2"
+                               target="_blank">
+                                <div class="d-flex align-items-center">
+                                    <div class="bg-light rounded p-2 me-3">
+                                        <i class="fas fa-file-{{ material.file_type }} text-primary"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <small class="d-block text-muted">{{ material.get_file_type_display }}</small>
+                                        <strong class="small">{{ material.title }}</strong>
+                                    </div>
+                                    <div>
+                                        <i class="fas fa-download text-muted"></i>
+                                    </div>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Next Button -->
+                <!-- <div class="sticky-top" style="top: 20px;">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body text-center">
+                            {% if assignment.status == 'completed' %}
+                            <div class="alert alert-success mb-3">
+                                <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                <h6 class="mb-0">Course Completed!</h6>
+                                <small>Finished on {{ assignment.completed_at|date:"F d, Y" }}</small>
+                            </div>
+                            <a href="{% url 'account:take_quiz' course.id %}" 
+                               class="btn btn-outline-success w-100">
+                                <i class="fas fa-redo me-1"></i> Retake Quiz
+                            </a>
+                            {% else %}
+                            <div class="mb-3">
+                                <h6>Ready for the quiz?</h6>
+                                <p class="text-muted small">
+                                    Complete the video and test your knowledge.
+                                </p>
+                            </div>
+                            
+                             Mark as Complete Button -->
+                            <!-- <button class="btn btn-outline-dark w-100 mb-2" id="markCompleteBtn">
+                                <i class="fas fa-check me-1"></i> Mark as Complete
+                            </button> -->
+                            
+                            <!-- Next/Quiz Button -->
+                            
+                               <!-- class="btn btn-dark w-100" id="quizBtn">
+                                <i class="fas fa-forward me-1"></i> Take Quiz
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div> --> 
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const video = document.getElementById('courseVideo');
+        const playPauseBtn = document.getElementById('playPauseBtn');
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const videoProgress = document.getElementById('videoProgress');
+        const markCompleteBtn = document.getElementById('markCompleteBtn');
+        const quizBtn = document.getElementById('quizBtn');
+        const mainProgressCircle = document.getElementById('mainProgressCircle');
+        
+        // Video Player Controls
+        if (video) {
+            // Update time display
+            video.addEventListener('loadedmetadata', function() {
+                durationEl.textContent = formatTime(video.duration);
+            });
+            
+            video.addEventListener('timeupdate', function() {
+                currentTimeEl.textContent = formatTime(video.currentTime);
+                const progress = (video.currentTime / video.duration) * 100;
+                videoProgress.style.width = progress + '%';
+                
+                // Auto-save progress every 30 seconds
+                if (Math.floor(video.currentTime) % 30 === 0) {
+                    saveProgress(video.currentTime);
+                }
+            });
+            
+            // Play/Pause button
+            playPauseBtn.addEventListener('click', function() {
+                if (video.paused) {
+                    video.play();
+                    playPauseBtn.innerHTML = '<i class="fas fa-pause me-1"></i> Pause';
+                } else {
+                    video.pause();
+                    playPauseBtn.innerHTML = '<i class="fas fa-play me-1"></i> Play';
+                }
+            });
+            
+            // Fullscreen button
+            fullscreenBtn.addEventListener('click', function() {
+                if (video.requestFullscreen) {
+                    video.requestFullscreen();
+                } else if (video.webkitRequestFullscreen) {
+                    video.webkitRequestFullscreen();
+                } else if (video.mozRequestFullScreen) {
+                    video.mozRequestFullScreen();
+                }
+            });
+        }
+        
+        // Mark as Complete button
+        if (markCompleteBtn) {
+            markCompleteBtn.addEventListener('click', function() {
+                if (confirm('Mark this course as complete? This will enable the quiz.')) {
+                    fetch('{% url "account:mark_course_complete" assignment.id %}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            progress: 100,
+                            status: 'completed'
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            location.reload();
+                        }
+                    });
+                }
+            });
+        }
+        
+        // Update progress circle
+        const progress = {{ assignment.progress_percentage }};
+        const radius = 54;
+        const circumference = 2 * Math.PI * radius;
+        const offset = circumference - (progress / 100) * circumference;
+        
+        if (mainProgressCircle) {
+            mainProgressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+            mainProgressCircle.style.strokeDashoffset = offset;
+        }
+        
+        // Helper functions
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${minutes}:${secs.toString().padStart(2, '0')}`;
+        }
+        
+        function saveProgress(currentTime) {
+            fetch('{% url "account:update_course_progress" assignment.id %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    progress: (currentTime / {{ course.video_duration_minutes }} * 60) * 100,
+                    last_accessed: new Date().toISOString()
+                })
+            });
+        }
+        
+        // Auto-play next video if available
+        const videos = document.querySelectorAll('video');
+        videos.forEach((vid, index) => {
+            vid.addEventListener('ended', function() {
+                if (index < videos.length - 1) {
+                    videos[index + 1].play();
+                }
+            });
+        });
+    });
+</script>
+
+<style>
+    .sticky-top {
+        position: -webkit-sticky;
+        position: sticky;
+    }
+    
+    #mainProgressCircle {
+        transition: stroke-dashoffset 1s ease;
+        transform: rotate(-90deg);
+        transform-origin: 50% 50%;
+    }
+    
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .ratio-16x9 {
+        --bs-aspect-ratio: 56.25%;
+    }
+    
+    video {
+        background-color: #000;
+    }
+</style>
+{% endblock %}
