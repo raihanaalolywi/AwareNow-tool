@@ -3,12 +3,42 @@
 {% load youtube_filters %}
 
 {% block title %}{{ course.title }} - Learning{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/course_learning.css' %}">
+{% endblock %}
 
 {% block content %}
-<!-- Status Messages -->
-<div id="statusMessage" class="mt-3"></div>
+<!-- ===== COLORED HEADER ===== -->
+<div class="course-header">
+    <div class="container">
+      <div class="d-flex align-items-center gap-5">
+  
+        <!-- Back -->
+        <a href="{% url 'account:employee_dashboard' %}"
+           class="course-back">
+          <span class="material-symbols-outlined">
+            arrow_back
+          </span>
+        </a>
+  
+        <!-- Title -->
+        <div>
+          <h3 class="mb-0 text-white">
+            {{ course.title }}
+          </h3>
+          <small class="text-white-50">
+            Course
+          </small>
+        </div>
+  
+      </div>
+    </div>
+  </div>
+  
+
+<!-- <div id="statusMessage" class="mt-3"></div>
 <div class="container-fluid px-0">
-    <!-- Slim Dark Grey Header -->
+    
     <div class="bg-dark text-white py-3">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
@@ -33,7 +63,7 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- Main Content -->
     <div class="container py-4">
@@ -106,54 +136,92 @@
                 </div>
 
                 <!-- Action Buttons -->
-<div class="d-flex justify-content-between align-items-center mt-4 p-4 bg-grey rounded">
-    <div>
-        {% if assignment.status == 'assigned' %}
-        <button class="btn btn-dark px-4" id="startCourseBtn">
-            <i class="fas fa-play me-2"></i>Start Course
-        </button>
-        {% elif assignment.status == 'in_progress' %}
-            {% if course.quiz and not quiz_passed %}
-                <!-- Nothing here - Next button handles quiz -->
-            {% else %}
-                <!-- Show Mark Complete button -->
-                <button class="btn btn-success px-4" id="markCompleteBtn">
-                    <i class="fas fa-check me-2"></i>Mark Complete
-                </button>
-            {% endif %}
-        {% elif assignment.status == 'completed' %}
-        <button class="btn btn-secondary px-4" disabled>
-            <i class="fas fa-check-circle me-2"></i>Completed
-        </button>
-        {% endif %}
-    </div>
-    
-    <!-- Next Button -->
-    <div>
-        {% if assignment.status == 'assigned' %}
-        <button class="btn btn-outline-dark px-4" disabled>
-            Next <i class="fas fa-arrow-right ms-2"></i>
-        </button>
-        {% elif assignment.status == 'in_progress' %}
-            {% if course.quiz and not quiz_passed %}
-            <!-- Next button becomes Take Quiz -->
-            <a href="{% url 'account:start_quiz' course.id %}" class="btn btn-primary px-4">
-                Next <i class="fas fa-arrow-right ms-2"></i>
-            </a>
-            {% else %}
-            <!-- Next button stays disabled -->
-            <button class="btn btn-outline-dark px-4" disabled>
-                Next <i class="fas fa-arrow-right ms-2"></i>
-            </button>
-            {% endif %}
-        {% elif assignment.status == 'completed' %}
-        <!-- Next button goes to dashboard -->
-        <a href="{% url 'account:employee_dashboard' %}" class="btn btn-dark px-4">
-            Next <i class="fas fa-arrow-right ms-2"></i>
+                 <!-- Action Button -->
+<div class="text-center mt-4">
+
+    {% if course.quiz %}
+    <div class="text-center mt-4 small fw-normal">
+        <a href="{% url 'account:start_quiz' course.id %}"
+        class="btn btn-brand btn-lg px-5">
+        Take Quiz
         </a>
-        {% endif %}
     </div>
-</div>
+    {% else %}
+    <div class="text-center mt-4">
+        <button class="btn btn-secondary btn-lg px-5" disabled>
+        No Quiz Available
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- {% if assignment.status == 'assigned' %}
+      <button class="btn btn-brand course-action-btn"
+              id="startCourseBtn">
+        Start Course
+      </button>
+  
+    {% elif assignment.status == 'in_progress' %}
+        <a href="{% url 'account:start_quiz' assignment.course.id %}"
+            class="btn btn-brand w-100">
+            Continue Learning
+        </a>
+ 
+  
+    {% elif assignment.status == 'completed' %}
+      <button class="btn btn-outline-success course-action-btn" disabled>
+        ✓ Completed
+      </button>
+    {% endif %} -->
+  
+  </div>
+  
+    <!-- <div class="d-flex justify-content-between align-items-center mt-4 p-4 bg-grey rounded">
+        <div>
+            {% if assignment.status == 'assigned' %}
+                <button class="btn btn-dark px-4" id="startCourseBtn">
+                    <i class="fas fa-play me-2"></i>Start Course
+                </button>
+            {% elif assignment.status == 'in_progress' %}
+                {% if course.quiz and not quiz_passed %}
+                {% else %}
+                    <button class="btn btn-success px-4" id="markCompleteBtn">
+                        <i class="fas fa-check me-2"></i>Mark Complete
+                    </button>
+            {% endif %}
+
+                {% elif assignment.status == 'completed' %}
+                    <button class="btn btn-secondary px-4" disabled>
+                        <i class="fas fa-check-circle me-2"></i>Completed
+                    </button>
+                {% endif %}
+        </div>
+    
+                    <div>
+                        {% if assignment.status == 'assigned' %}
+                            <button class="btn btn-outline-dark px-4" disabled>
+                                Next <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+
+                        {% elif assignment.status == 'in_progress' %}
+                            {% if course.quiz and not quiz_passed %}
+                            <a href="{% url 'account:start_quiz' course.id %}" class="btn btn-primary px-4">
+                                Next <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+
+                            {% else %}
+                            <button class="btn btn-outline-dark px-4" disabled>
+                                Next <i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                        {% endif %}
+
+                            {% elif assignment.status == 'completed' %}
+                            <a href="{% url 'account:employee_dashboard' %}" class="btn btn-dark px-4">
+                                Next <i class="fas fa-arrow-right ms-2"></i>
+                            </a>
+                            {% endif %}
+
+                    </div>
+    </div> -->
             </div>
         </div>
     </div>
@@ -220,11 +288,10 @@ function markCourseAsComplete(buttonElement) {
             if (markCompleteBtn) {
                 markCompleteBtn.style.display = 'none';
             }
-            
-            // Show success status message
+
             showStatus('Course completed successfully!', 'success');
         } else {
-            // Check if it's a quiz requirement error
+           
             if (data.message && data.message.includes('quiz')) {
                 showStatus('You must pass the quiz to complete this course.', 'warning');
             } else {
@@ -243,11 +310,10 @@ function markCourseAsComplete(buttonElement) {
     });
 }
 
-// Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Setting up course page...');
     
-    // Setup Start button
+    
     const startBtn = document.getElementById('startCourseBtn');
     if (startBtn) {
         startBtn.onclick = function() {
@@ -268,10 +334,10 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(data => {
                 console.log('Start response:', data);
                 if (data.success) {
-                    // Show brief status message
+                    
                     showStatus('Course started successfully', 'success');
                     
-                    // Brief delay for visual feedback then reload
+                    
                     setTimeout(() => {
                         window.location.reload();
                     }, 800);
@@ -288,7 +354,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
-    // Setup Mark Complete button (if it exists)
+    
     const markCompleteBtn = document.getElementById('markCompleteBtn');
     if (markCompleteBtn) {
         markCompleteBtn.onclick = function() {
@@ -301,8 +367,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 
-<style>
-/* Custom black/grey theme with white background */
+<!-- <style>
 .bg-grey {
     background-color: #f8f9fa !important;
     border-color: #dee2e6 !important;
@@ -321,7 +386,6 @@ document.addEventListener('DOMContentLoaded', function() {
     border-bottom-color: #454d55 !important;
 }
 
-/* Button styles */
 .btn-dark {
     background-color: #343a40;
     border-color: #343a40;
@@ -378,12 +442,10 @@ document.addEventListener('DOMContentLoaded', function() {
     color: #343a40;
 }
 
-/* Video container */
 #player-container {
     border-radius: 4px;
 }
 
-/* Status badges */
 .badge {
     font-weight: 500;
     padding: 4px 8px;
@@ -394,18 +456,15 @@ document.addEventListener('DOMContentLoaded', function() {
     background-color: #6c757d !important;
 }
 
-/* Button transitions */
 .btn {
     transition: all 0.2s ease;
     font-weight: 500;
 }
 
-/* Status message */
 #statusMessage {
     min-height: 60px;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .d-flex.justify-content-between {
         flex-direction: column;
@@ -427,7 +486,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 
-/* Shadow for cards */
 .shadow-lg {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
 }
@@ -435,5 +493,5 @@ document.addEventListener('DOMContentLoaded', function() {
 .shadow-sm {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
 }
-</style>
+</style> -->
 {% endblock %}

@@ -5,11 +5,74 @@
 {% load static %}
 
 {% block title %}Quiz: {{ quiz.course.title }}{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/course_learning.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid px-0">
     <!-- Quiz Header -->
-    <div class="bg-dark text-white py-3">
+    <!-- <div class="bg-dark text-white py-2">
+        <div class="container d-flex align-items-center justify-content-between">
+          <h1 class="h5 mb-0 fw-normal">{{ quiz.title }}</h1>
+      
+            <a href="{% url 'account:view_course' quiz.course.id %}"
+             class="course-back">
+                <span class="material-symbols-outlined">
+                    arrow_back
+                </span>
+            </a>
+
+        </div>
+      </div> -->
+
+      <!-- Quiz Header -->
+<div class="quiz-header">
+    <div class="container">
+      <div class="quiz-header-row">
+  
+        <!-- Left: Back + Title -->
+        <div class="quiz-left">
+          <!-- <a href="{% url 'account:view_course' quiz.course.id %}" class="back-btn">
+            <span class="material-icons">arrow_back</span>
+          </a> -->
+
+          <!-- Back -->
+        <a href="{% url 'account:employee_dashboard' %}"
+            class="course-back">
+            <span class="material-symbols-outlined">
+                arrow_back
+            </span>
+        </a>
+  
+          <div>
+            <h1 class="quiz-title">{{ quiz.title }}</h1>
+  
+            <!-- Quiz meta info -->
+            <div class="quiz-meta">
+              <span>📝 {{ quiz.questions.count }} Questions</span>
+              <span>🎯 Pass: {{ quiz.passing_score }}%</span>
+              <span>🔁 Attempt {{ attempt_number }}/{{ quiz.max_attempts }}</span>
+              {% if quiz.time_limit_minutes > 0 %}
+                <span>⏱ {{ quiz.time_limit_minutes }} min</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+  
+        <!-- Right: Timer -->
+        {% if quiz.time_limit_minutes > 0 %}
+        <div class="quiz-timer">
+          <span id="timerDisplay">{{ quiz.time_limit_minutes }}:00</span>
+        </div>
+        {% endif %}
+  
+      </div>
+    </div>
+  </div>
+  
+      
+    <!-- <div class="bg-dark text-white py-3">
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
                 <div>
@@ -35,14 +98,14 @@
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- Quiz Content -->
     <div class="container py-4">
-        <div class="row justify-content-center">
+        <div class="row">
             <div class="col-lg-8">
                 <!-- Quiz Instructions -->
-                <div class="card border-dark mb-4">
+                <!-- <div class="card border-dark mb-4">
                     <div class="card-header bg-dark text-white">
                         <h5 class="mb-0">
                             <i class="fas fa-question-circle me-2"></i>
@@ -83,7 +146,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Quiz Questions Form -->
                 <form method="post" action="{% url 'account:submit_quiz' attempt.id %}" id="quizForm">
@@ -92,13 +155,24 @@
                     {% for question in questions %}
                     <div class="card border-grey mb-4 question-card" data-question-type="{{ question.question_type }}">
                         <div class="card-header bg-grey">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <p class="mb-0 fw-semibold">
+                                    {{ question.question_text }}
+                                </p>
+                                <span class="badge bg-secondary small fw-normal ms-3">
+                                    {{ question.points }} pts
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- <div class="card-header bg-grey">
                             <h5 class="mb-0 d-flex justify-content-between align-items-center">
                                 <span>Question {{ forloop.counter }}</span>
-                                <span class="badge bg-dark">{{ question.points }} points</span>
+                                <span class="fw-medium fs-6">{{ question.points }} points</span>
                             </h5>
-                        </div>
+                        </div> -->
                         <div class="card-body">
-                            <p class="fw-medium mb-3">{{ question.question_text }}</p>
+                            <!-- <p class="fw-medium mb-3">{{ question.question_text }}</p> -->
                             
                             {% if question.question_type == 'multiple_choice' %}
                                 <!-- Multiple Choice (Single Answer) -->
@@ -163,28 +237,36 @@
                     
                     <!-- Quiz Actions -->
                     <div class="d-flex justify-content-between align-items-center p-4 bg-grey rounded">
-                        <div>
+                        <!-- <div>
                             <button type="button" class="btn btn-outline-dark" id="saveDraftBtn">
                                 <i class="fas fa-save me-2"></i>Save Draft
                             </button>
-                        </div>
-                        <div>
+                        </div> -->
+
+                        <!-- <div>
                             <button type="submit" class="btn btn-success px-4">
                                 <i class="fas fa-paper-plane me-2"></i>Submit Quiz
                             </button>
+                        </div> -->
+                        <div class="text-center mt-5">
+                            <button type="submit" class="btn btn-brand px-5 py-2 fw-semibold">
+                              Submit Quiz
+                            </button>
                         </div>
+                          
+
                     </div>
                 </form>
                 
                 <!-- Timer Display (if time limit) -->
-                {% if quiz.time_limit_minutes > 0 %}
+                <!-- {% if quiz.time_limit_minutes > 0 %}
                 <div class="mt-3 text-center">
                     <div class="alert alert-warning">
                         <i class="fas fa-clock me-2"></i>
                         Time remaining: <span id="timerDisplay">{{ quiz.time_limit_minutes }}:00</span>
                     </div>
                 </div>
-                {% endif %}
+                {% endif %} -->
             </div>
         </div>
     </div>
@@ -287,63 +369,63 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Form submission handling - UPDATED FOR AJAX
-document.getElementById('quizForm').addEventListener('submit', function(e) {
-    e.preventDefault(); // Prevent traditional form submission
+// document.getElementById('quizForm').addEventListener('submit', function(e) {
+//     e.preventDefault(); // Prevent traditional form submission
     
-    // Clear draft on submit
-    localStorage.removeItem('quiz_draft_{{ quiz.id }}');
+//     // Clear draft on submit
+//     localStorage.removeItem('quiz_draft_{{ quiz.id }}');
     
-    // Disable submit button to prevent double submission
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const originalBtnText = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+//     // Disable submit button to prevent double submission
+//     const submitBtn = this.querySelector('button[type="submit"]');
+//     const originalBtnText = submitBtn.innerHTML;
+//     submitBtn.disabled = true;
+//     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
     
-    // If timer exists, stop it
-    if (timerInterval) {
-        clearInterval(timerInterval);
-    }
+//     // If timer exists, stop it
+//     if (timerInterval) {
+//         clearInterval(timerInterval);
+//     }
     
-    // Collect form data
-    const formData = new FormData(this);
+//     // Collect form data
+//     const formData = new FormData(this);
     
-    // Send AJAX request
-    fetch(this.action, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            // Show success message
-            submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>Submitted!';
-            submitBtn.classList.remove('btn-success');
-            submitBtn.classList.add('btn-primary');
+//     // Send AJAX request
+//     fetch(this.action, {
+//         method: 'POST',
+//         body: formData,
+//         headers: {
+//             'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+//         }
+//     })
+//     .then(response => response.json())
+//     .then(data => {
+//         if (data.success) {
+//             // Show success message
+//             submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>Submitted!';
+//             submitBtn.classList.remove('btn-success');
+//             submitBtn.classList.add('btn-primary');
             
-            // Redirect to results page after a short delay
-            setTimeout(() => {
-                window.location.href = data.redirect_url;
-            }, 1500);
-        } else {
-            // Show error
-            alert('Error: ' + data.error);
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = originalBtnText;
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred. Please try again.');
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalBtnText;
-    });
-});
+//             // Redirect to results page after a short delay
+//             setTimeout(() => {
+//                 window.location.href = data.redirect_url;
+//             }, 1500);
+//         } else {
+//             // Show error
+//             alert('Error: ' + data.error);
+//             submitBtn.disabled = false;
+//             submitBtn.innerHTML = originalBtnText;
+//         }
+//     })
+//     .catch(error => {
+//         console.error('Error:', error);
+//         alert('An error occurred. Please try again.');
+//         submitBtn.disabled = false;
+//         submitBtn.innerHTML = originalBtnText;
+//     });
+// });
 </script>
 
-<style>
+<!-- <style>
 .bg-grey {
     background-color: #f8f9fa !important;
     border-color: #dee2e6 !important;
@@ -367,7 +449,6 @@ document.getElementById('quizForm').addEventListener('submit', function(e) {
     border-bottom-color: #dee2e6 !important;
 }
 
-/* Question styling */
 .question-card {
     transition: all 0.2s ease;
 }
@@ -381,11 +462,10 @@ document.getElementById('quizForm').addEventListener('submit', function(e) {
     border-color: #198754;
 }
 
-/* Timer styling */
 #timerDisplay {
     font-family: monospace;
     font-weight: bold;
     font-size: 1.2rem;
 }
-</style>
+</style> -->
 {% endblock %}

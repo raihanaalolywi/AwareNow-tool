@@ -56,6 +56,17 @@
         </a>
       {% endif %}
 
+      {% if user.is_authenticated and user.role == "EMPLOYEE" %}
+        <a class="nav-link fw-normal d-none d-lg-block
+          {% if request.resolver_match.url_name == 'employee_dashboard' %}
+            active-nav
+          {% endif %}"
+          href="{% url 'account:employee_dashboard' %}">
+          Home
+        </a>
+      {% endif %}
+
+
     </div>
 
     <!-- Mobile toggle -->
@@ -249,6 +260,16 @@
       <!-- Desktop menu (Employee) -->
       <ul class="navbar-nav align-items-center gap-3 d-none d-lg-flex">
 
+        <!-- <li class="nav-item">
+          <a class="nav-link nav-secondary
+             {% if request.resolver_match.url_name == 'employee_dashboard' %}
+               active-nav
+             {% endif %}"
+             href="{% url 'account:employee_dashboard' %}">
+             Home
+          </a>
+        </li> -->
+        
         <li class="nav-item">
           <a class="nav-link nav-secondary {% if request.resolver_match.url_name == 'employee_policies' %}active-nav{% endif %}"
              href="{% url 'policies:employee_policies' %}">

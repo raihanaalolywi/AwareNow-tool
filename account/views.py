@@ -350,6 +350,13 @@ def view_course(request, course_id):
                 'assigned_at': timezone.now()
             }
         )
+        # ✅ NEW LOGIC: start course automatically
+        if assignment.status == 'assigned':
+            assignment.status = 'in_progress'
+            if not assignment.started_at:
+                assignment.started_at = timezone.now()
+            assignment.save()
+
         # In your view_course function, add this after getting the assignment:
 
         # Check if quiz is passed and get attempts
@@ -1044,14 +1051,27 @@ def submit_quiz(request, attempt_id):
         attempt.time_taken_seconds = int(time_taken)
         attempt.answers_data = answers_data
         attempt.save()
-        
-        return JsonResponse({
-            'success': True,
-            'score': round(score_percentage, 1),
-            'passed': attempt.passed,
-            'passing_score': attempt.quiz.passing_score,
-            'redirect_url': reverse('account:quiz_result', args=[attempt.id])
-        })
+        # ✅ Mark course as completed after submitting quiz (regardless of pass/fail)
+        assignment = EmployeeCourseAssignment.objects.get(
+            employee=attempt.employee,
+            course=attempt.quiz.course
+        )
+
+        assignment.status = 'completed'
+        assignment.progress_percentage = 100
+        assignment.completed_at = timezone.now()
+        assignment.save()
+
+
+        return redirect('account:quiz_result', attempt_id=attempt.id)
+
+        # return JsonResponse({
+        #     'success': True,
+        #     'score': round(score_percentage, 1),
+        #     'passed': attempt.passed,
+        #     'passing_score': attempt.quiz.passing_score,
+        #     'redirect_url': reverse('account:quiz_result', args=[attempt.id])
+        # })
         
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
