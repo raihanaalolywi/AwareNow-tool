@@ -1,3 +1,6 @@
+
+
+
 {% extends "core/base.html" %}
 {% load static %}
 
@@ -83,7 +86,7 @@
                 </div>
 
                 <!-- Quiz Questions Form -->
-                <form method="post" id="quizForm">
+                <form method="post" action="{% url 'account:submit_quiz' attempt.id %}" id="quizForm">
                     {% csrf_token %}
                     
                     {% for question in questions %}
@@ -283,13 +286,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Form submission handling
+// Form submission handling - UPDATED FOR AJAX
 document.getElementById('quizForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent traditional form submission
+    
     // Clear draft on submit
     localStorage.removeItem('quiz_draft_{{ quiz.id }}');
     
     // Disable submit button to prevent double submission
     const submitBtn = this.querySelector('button[type="submit"]');
+    const originalBtnText = submitBtn.innerHTML;
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
     
@@ -297,6 +303,43 @@ document.getElementById('quizForm').addEventListener('submit', function(e) {
     if (timerInterval) {
         clearInterval(timerInterval);
     }
+    
+    // Collect form data
+    const formData = new FormData(this);
+    
+    // Send AJAX request
+    fetch(this.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            submitBtn.innerHTML = '<i class="fas fa-check me-2"></i>Submitted!';
+            submitBtn.classList.remove('btn-success');
+            submitBtn.classList.add('btn-primary');
+            
+            // Redirect to results page after a short delay
+            setTimeout(() => {
+                window.location.href = data.redirect_url;
+            }, 1500);
+        } else {
+            // Show error
+            alert('Error: ' + data.error);
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalBtnText;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalBtnText;
+    });
 });
 </script>
 

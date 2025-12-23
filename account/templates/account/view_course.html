@@ -5,6 +5,8 @@
 {% block title %}{{ course.title }} - Learning{% endblock %}
 
 {% block content %}
+<!-- Status Messages -->
+<div id="statusMessage" class="mt-3"></div>
 <div class="container-fluid px-0">
     <!-- Slim Dark Grey Header -->
     <div class="bg-dark text-white py-3">
@@ -104,95 +106,54 @@
                 </div>
 
                 <!-- Action Buttons -->
-                <div class="d-flex justify-content-between align-items-center mt-4 p-4 bg-grey rounded">
-                    <div class="d-flex gap-2">
-                        {% if assignment.status == 'assigned' %}
-                        <button class="btn btn-dark px-4" id="startCourseBtn">
-                            <i class="fas fa-play me-2"></i>Start Course
-                        </button>
-                        {% elif assignment.status == 'in_progress' %}
-                        <button class="btn btn-success px-4" id="markCompleteBtn">
-                            <i class="fas fa-check me-2"></i>Mark Complete
-                        </button>
-                        {% elif assignment.status == 'completed' %}
-                        <button class="btn btn-secondary px-4" disabled>
-                            <i class="fas fa-check-circle me-2"></i>Completed
-                        </button>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Next Button -->
-                    <div>
-                        <button class="btn btn-outline-dark px-4" id="nextCourseBtn" disabled>
-                            Next <i class="fas fa-arrow-right ms-2"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Quiz Section (required) -->
-                {% if course.quiz %}
-                <div class="mt-4 p-4 border rounded {% if quiz_passed %}bg-success bg-opacity-10{% else %}bg-light{% endif %}" id="quizSection">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h5 class="mb-1">
-                                <i class="fas fa-question-circle me-2 {% if quiz_passed %}text-success{% else %}text-primary{% endif %}"></i>
-                                Course Quiz (Required)
-                            </h5>
-                            <p class="mb-0 small">
-                                {% if quiz_passed %}
-                                <span class="text-success">
-                                    <i class="fas fa-check-circle me-1"></i>
-                                    Quiz passed
-                                </span>
-                                {% else %}
-                                <span class="text-muted">
-                                    <i class="fas fa-exclamation-circle me-1"></i>
-                                    Must pass quiz to complete course
-                                </span>
-                                {% endif %}
-                            </p>
-                        </div>
-                        <div>
-                            {% if quiz_passed %}
-                            <span class="badge bg-success">
-                                <i class="fas fa-check me-1"></i>Quiz Passed
-                            </span>
-                            {% else %}
-                            <a href="{% url 'account:start_quiz' course.id %}" class="btn btn-primary">
-                                <i class="fas fa-pen me-2"></i>Take Quiz
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    
-                    <!-- Quiz Attempt History - SIMPLIFIED VERSION -->
-                    {% if quiz_attempts %}
-                    <div class="mt-3 pt-3 border-top">
-                        <h6 class="mb-2 small text-muted">Quiz Attempts</h6>
-                        <div class="row">
-                            {% for attempt in quiz_attempts %}
-                            <div class="col-md-4 mb-2">
-                                <div class="p-2 border rounded {% if attempt.passed %}bg-success bg-opacity-10{% else %}bg-danger bg-opacity-10{% endif %}">
-                                    <div class="d-flex justify-content-between">
-                                        <small class="fw-medium">Attempt {{ attempt.attempt_number }}</small>
-                                        <small class="{% if attempt.passed %}text-success{% else %}text-danger{% endif %}">
-                                            {{ attempt.score|floatformat:1 }}%
-                                        </small>
-                                    </div>
-                                    <small class="text-muted d-block">
-                                        {{ attempt.started_at|date:"M d, H:i" }}
-                                    </small>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% endif %}
-                </div>
-                {% endif %}
-
-                <!-- Status Messages -->
-                <div id="statusMessage" class="mt-3"></div>
+<div class="d-flex justify-content-between align-items-center mt-4 p-4 bg-grey rounded">
+    <div>
+        {% if assignment.status == 'assigned' %}
+        <button class="btn btn-dark px-4" id="startCourseBtn">
+            <i class="fas fa-play me-2"></i>Start Course
+        </button>
+        {% elif assignment.status == 'in_progress' %}
+            {% if course.quiz and not quiz_passed %}
+                <!-- Nothing here - Next button handles quiz -->
+            {% else %}
+                <!-- Show Mark Complete button -->
+                <button class="btn btn-success px-4" id="markCompleteBtn">
+                    <i class="fas fa-check me-2"></i>Mark Complete
+                </button>
+            {% endif %}
+        {% elif assignment.status == 'completed' %}
+        <button class="btn btn-secondary px-4" disabled>
+            <i class="fas fa-check-circle me-2"></i>Completed
+        </button>
+        {% endif %}
+    </div>
+    
+    <!-- Next Button -->
+    <div>
+        {% if assignment.status == 'assigned' %}
+        <button class="btn btn-outline-dark px-4" disabled>
+            Next <i class="fas fa-arrow-right ms-2"></i>
+        </button>
+        {% elif assignment.status == 'in_progress' %}
+            {% if course.quiz and not quiz_passed %}
+            <!-- Next button becomes Take Quiz -->
+            <a href="{% url 'account:start_quiz' course.id %}" class="btn btn-primary px-4">
+                Next <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+            {% else %}
+            <!-- Next button stays disabled -->
+            <button class="btn btn-outline-dark px-4" disabled>
+                Next <i class="fas fa-arrow-right ms-2"></i>
+            </button>
+            {% endif %}
+        {% elif assignment.status == 'completed' %}
+        <!-- Next button goes to dashboard -->
+        <a href="{% url 'account:employee_dashboard' %}" class="btn btn-dark px-4">
+            Next <i class="fas fa-arrow-right ms-2"></i>
+        </a>
+        {% endif %}
+    </div>
+</div>
             </div>
         </div>
     </div>
@@ -222,27 +183,6 @@ function showStatus(message, type = 'info') {
     }, 3000);
 }
 
-// Helper function to check quiz requirements and disable/enable buttons
-function checkQuizRequirements() {
-    const hasQuiz = {% if course.quiz %}true{% else %}false{% endif %};
-    const quizPassed = {% if quiz_passed %}true{% else %}false{% endif %};
-    
-    if (hasQuiz && !quizPassed) {
-        // Disable the Mark Complete button if it exists
-        const completeBtn = document.getElementById('markCompleteBtn');
-        if (completeBtn && !completeBtn.disabled) {
-            completeBtn.disabled = true;
-            completeBtn.title = "Complete the quiz first";
-            completeBtn.innerHTML = '<i class="fas fa-lock me-2"></i>Quiz Required';
-            completeBtn.classList.remove('btn-success');
-            completeBtn.classList.add('btn-secondary');
-            
-            // Show instructional message
-            showStatus('You must pass the quiz to complete this course.', 'warning');
-        }
-    }
-}
-
 // Helper function to mark course as complete
 function markCourseAsComplete(buttonElement) {
     buttonElement.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
@@ -267,12 +207,12 @@ function markCourseAsComplete(buttonElement) {
                 badge.textContent = 'Completed';
             }
             
-            // Enable Next button
-            const nextBtn = document.getElementById('nextCourseBtn');
+            // Update Next button to go to dashboard
+            const nextBtn = document.querySelector('.btn-outline-dark, .btn-primary, .btn-dark');
             if (nextBtn) {
-                nextBtn.disabled = false;
-                nextBtn.classList.remove('btn-outline-dark');
-                nextBtn.classList.add('btn-dark');
+                nextBtn.className = 'btn btn-dark px-4';
+                nextBtn.innerHTML = 'Next <i class="fas fa-arrow-right ms-2"></i>';
+                nextBtn.href = '{% url "account:employee_dashboard" %}';
             }
             
             // Hide Mark Complete button
@@ -286,36 +226,13 @@ function markCourseAsComplete(buttonElement) {
         } else {
             // Check if it's a quiz requirement error
             if (data.message && data.message.includes('quiz')) {
-                showStatus(data.message, 'warning');
-                
-                // Highlight quiz section
-                const quizSection = document.getElementById('quizSection');
-                if (quizSection) {
-                    quizSection.classList.add('border-warning');
-                    quizSection.classList.remove('bg-light', 'bg-success', 'bg-opacity-10');
-                    quizSection.classList.add('bg-warning', 'bg-opacity-10');
-                    
-                    // Add a link to take quiz if not already there
-                    if (!quizSection.querySelector('.quiz-link-added')) {
-                        const quizLink = document.createElement('div');
-                        quizLink.className = 'mt-2 quiz-link-added';
-                        quizLink.innerHTML = `
-                            <a href="{% url 'account:start_quiz' course.id %}" class="btn btn-sm btn-warning">
-                                <i class="fas fa-pen me-1"></i>Take Quiz Now
-                            </a>
-                        `;
-                        quizSection.appendChild(quizLink);
-                    }
-                }
+                showStatus('You must pass the quiz to complete this course.', 'warning');
             } else {
                 showStatus('Failed to complete course', 'danger');
             }
             
             buttonElement.innerHTML = '<i class="fas fa-check me-2"></i>Mark Complete';
             buttonElement.disabled = false;
-            
-            // Re-check quiz requirements
-            checkQuizRequirements();
         }
     })
     .catch(error => {
@@ -330,26 +247,7 @@ function markCourseAsComplete(buttonElement) {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Setting up course page...');
     
-    // Check quiz requirements on page load
-    checkQuizRequirements();
-    
-    // 1. Setup Next button based on completion status
-    const nextBtn = document.getElementById('nextCourseBtn');
-    if (nextBtn) {
-        const isCompleted = "{{ assignment.status }}" === 'completed';
-        if (isCompleted) {
-            nextBtn.disabled = false;
-            nextBtn.classList.remove('btn-outline-dark');
-            nextBtn.classList.add('btn-dark');
-        }
-        
-        nextBtn.onclick = function() {
-            console.log('Navigating to dashboard...');
-            window.location.href = '{% url "account:employee_dashboard" %}';
-        };
-    }
-    
-    // 2. Setup Start button
+    // Setup Start button
     const startBtn = document.getElementById('startCourseBtn');
     if (startBtn) {
         startBtn.onclick = function() {
@@ -390,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
-    // 3. Setup Mark Complete button
+    // Setup Mark Complete button (if it exists)
     const markCompleteBtn = document.getElementById('markCompleteBtn');
     if (markCompleteBtn) {
         markCompleteBtn.onclick = function() {
@@ -455,6 +353,18 @@ document.addEventListener('DOMContentLoaded', function() {
 .btn-success:hover {
     background-color: #157347;
     border-color: #146c43;
+}
+
+.btn-primary {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+    color: white;
 }
 
 .btn-outline-light {
