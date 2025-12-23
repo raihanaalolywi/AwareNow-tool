@@ -1,0 +1,191 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block title %}Quiz Results: {{ quiz.course.title }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+    <!-- Results Header -->
+    <div class="bg-dark text-white py-3">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h1 class="h4 mb-0 fw-normal">Quiz Results: {{ quiz.course.title }}</h1>
+                    <div class="d-flex align-items-center mt-1">
+                        <span class="badge {% if attempt.passed %}bg-success{% else %}bg-danger{% endif %} me-2">
+                            {% if attempt.passed %}PASSED{% else %}FAILED{% endif %}
+                        </span>
+                        <small class="text-white-50">
+                            Attempt {{ attempt.attempt_number }} of {{ quiz.max_attempts }}
+                        </small>
+                    </div>
+                </div>
+                <div>
+                    <a href="{% url 'account:view_course' quiz.course.id %}" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Course
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Summary -->
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <!-- Score Card -->
+                <div class="card border-dark mb-4">
+                    <div class="card-body text-center py-5">
+                        <div class="display-1 fw-bold {% if attempt.passed %}text-success{% else %}text-danger{% endif %}">
+                            {{ attempt.score|floatformat:1 }}%
+                        </div>
+                        <h3 class="mt-3">
+                            {% if attempt.passed %}
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            Congratulations! You passed!
+                            {% else %}
+                            <i class="fas fa-times-circle text-danger me-2"></i>
+                            Keep trying! Passing score is {{ quiz.passing_score }}%
+                            {% endif %}
+                        </h3>
+                        <p class="text-muted mt-2">
+                            Completed in {{ time_taken_minutes }}m {{ time_taken_seconds }}s
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Detailed Results -->
+                <div class="card border-grey">
+                    <div class="card-header bg-grey">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list-check me-2"></i>
+                            Question Review
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        {% for result in results %}
+                        <div class="mb-4 pb-4 {% if not forloop.last %}border-bottom{% endif %}">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h6 class="fw-medium mb-0">Question {{ forloop.counter }}</h6>
+                                <span class="badge {% if result.is_correct %}bg-success{% else %}bg-danger{% endif %}">
+                                    {% if result.is_correct %}+{{ result.points }} pts{% else %}0 pts{% endif %}
+                                </span>
+                            </div>
+                            <p class="mb-3">{{ result.question.question_text }}</p>
+                            
+                            <!-- Answer Options -->
+                            {% if result.options %}
+                            <div class="mb-3">
+                                {% for option in result.options %}
+                                <div class="form-check mb-1">
+                                    {% if result.question.question_type == 'multiple_select' %}
+                                        {% if option.label in result.user_answer %}
+                                            <i class="fas {% if option.label in result.correct_answers %}fa-check-circle text-success{% else %}fa-times-circle text-danger{% endif %} me-2"></i>
+                                        {% else %}
+                                            <i class="fas {% if option.label in result.correct_answers %}fa-check-circle text-secondary{% else %}far fa-circle text-secondary{% endif %} me-2"></i>
+                                        {% endif %}
+                                    {% else %}
+                                        {% if option.label == result.user_answer %}
+                                            <i class="fas {% if option.label in result.correct_answers %}fa-check-circle text-success{% else %}fa-times-circle text-danger{% endif %} me-2"></i>
+                                        {% else %}
+                                            <i class="fas {% if option.label in result.correct_answers %}fa-check-circle text-secondary{% else %}far fa-circle text-secondary{% endif %} me-2"></i>
+                                        {% endif %}
+                                    {% endif %}
+                                    <span class="{% if option.label in result.correct_answers %}fw-bold{% endif %}">
+                                        {{ option.text }}
+                                    </span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- True/False Answers -->
+                            {% if result.question.question_type == 'true_false' %}
+                            <div class="mb-3">
+                                <div class="form-check mb-1">
+                                    {% if result.user_answer == 'True' %}
+                                        <i class="fas {% if 'True' in result.correct_answers %}fa-check-circle text-success{% else %}fa-times-circle text-danger{% endif %} me-2"></i>
+                                    {% else %}
+                                        <i class="fas {% if 'True' in result.correct_answers %}fa-check-circle text-secondary{% else %}far fa-circle text-secondary{% endif %} me-2"></i>
+                                    {% endif %}
+                                    <span>True</span>
+                                </div>
+                                <div class="form-check mb-1">
+                                    {% if result.user_answer == 'False' %}
+                                        <i class="fas {% if 'False' in result.correct_answers %}fa-check-circle text-success{% else %}fa-times-circle text-danger{% endif %} me-2"></i>
+                                    {% else %}
+                                        <i class="fas {% if 'False' in result.correct_answers %}fa-check-circle text-secondary{% else %}far fa-circle text-secondary{% endif %} me-2"></i>
+                                    {% endif %}
+                                    <span>False</span>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Explanation -->
+                            {% if result.question.explanation %}
+                            <div class="alert alert-info mt-2">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Explanation:</strong> {{ result.question.explanation }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="d-flex justify-content-between align-items-center mt-4 p-4 bg-grey rounded">
+                    <div>
+                        <a href="{% url 'account:view_course' quiz.course.id %}" class="btn btn-outline-dark">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Course
+                        </a>
+                    </div>
+                    <div>
+                        {% if not attempt.passed and attempt.attempt_number < quiz.max_attempts %}
+                        <a href="{% url 'account:start_quiz' quiz.course.id %}" class="btn btn-warning">
+                            <i class="fas fa-redo me-2"></i>Try Again
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'account:employee_dashboard' %}" class="btn btn-dark ms-2">
+                            <i class="fas fa-home me-2"></i>Dashboard
+                        </a>
+                    </div>
+
+                    {% if attempt.passed %}
+<div class="text-center mt-4">
+    <div class="alert alert-success">
+        <i class="fas fa-check-circle me-2"></i>
+        You passed the quiz! You can now complete the course.
+    </div>
+    <a href="{% url 'account:view_course' quiz.course.id %}" class="btn btn-success">
+        <i class="fas fa-arrow-left me-2"></i>Back to Course
+    </a>
+</div>
+{% endif %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+<style>
+.bg-grey {
+    background-color: #f8f9fa !important;
+    border-color: #dee2e6 !important;
+}
+
+.card.border-dark {
+    border-color: #343a40 !important;
+}
+
+.card.border-grey {
+    border-color: #dee2e6 !important;
+}
+
+.card-header.bg-grey {
+    background-color: #e9ecef !important;
+    border-bottom-color: #dee2e6 !important;
+}
+</style>

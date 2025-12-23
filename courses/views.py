@@ -4,6 +4,11 @@ from django.contrib import messages
 from django.utils import timezone
 from django.http import HttpResponseForbidden
 from django.db.models import Avg, Count, Q
+
+import json
+from django.utils import timezone
+from django.db.models import Max
+
 # Remove: from datetime import datetime, timedelta  # Don't need datetime anymore
 from account.models import Company, EmployeeProfile
 from courses.models import Course, CourseCategory, CompanyCourseAssignment, EmployeeCourseAssignment, QuizAttempt

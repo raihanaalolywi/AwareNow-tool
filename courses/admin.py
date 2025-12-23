@@ -1,81 +1,149 @@
+# Update your existing admin.py with these improvements:
+
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from django.utils import timezone
 from .models import (
-    CourseCategory, Course, CompanyCourseAssignment,  # Make sure Course is imported
-    CompanyCourseGroup, Quiz, QuizQuestion, EmployeeCourseAssignment
+    CourseCategory, Course, CompanyCourseAssignment,
+    CompanyCourseGroup, Quiz, QuizQuestion, EmployeeCourseAssignment,
+    QuizAttempt  # Add this import
 )
+from django.db.models import Count
 
-@admin.register(CourseCategory)
-class CourseCategoryAdmin(admin.ModelAdmin):
-    list_display = ('name', 'icon', 'color_display', 'course_count')
-    list_filter = ('icon',)
-    search_fields = ('name', 'description')
-    
-    def color_display(self, obj):
-        if obj.color:
-            return format_html(
-                '<span style="display:inline-block; width:20px; height:20px; '
-                'background-color:{}; border:1px solid #ccc;"></span> {}',
-                obj.color, obj.color
-            )
-        return "-"
-    color_display.short_description = 'Color'
-    
-    def course_count(self, obj):
-        # This requires Course model to be imported
-        from .models import Course  # Add this line
-        return Course.objects.filter(category=obj).count()
-    course_count.short_description = 'Courses'
+# Add this inline class
+class QuizQuestionInline(admin.TabularInline):
+    model = QuizQuestion
+    extra = 1
+    fields = ('order', 'question_text', 'question_type', 'points', 'correct_answers')
+    ordering = ('order',)
+    show_change_link = True
 
-@admin.register(Course)
-class CourseAdmin(admin.ModelAdmin):
-    list_display = (
-        'title', 'category', 'created_by', 'is_published', 
-        'visibility', 'created_at'  # REMOVED: 'actions' - this might be causing error
-    )
-    list_filter = ('is_published', 'visibility', 'category', 'created_at')
-    search_fields = ('title', 'brief_description', 'created_by__email')
-    readonly_fields = ('created_at', 'updated_at', 'published_at')
-    
+# Update your existing QuizAdmin
+@admin.register(Quiz)
+class QuizAdmin(admin.ModelAdmin):
+    list_display = ('course', 'title', 'passing_score', 'is_active', 'question_count', 'created_at')
+    list_filter = ('is_active', 'created_at')
+    search_fields = ('course__title', 'title', 'description')
+    inlines = [QuizQuestionInline]  # Add this line
     fieldsets = (
         ('Basic Information', {
-            'fields': ('title', 'brief_description', 'category', 'thumbnail')
+            'fields': ('course', 'title', 'description')
         }),
-        ('Content', {
-            'fields': ('video_url', 'video_duration_minutes')
+        ('Quiz Settings', {
+            'fields': ('passing_score', 'time_limit_minutes', 'max_attempts', 'is_active')
         }),
-        ('Settings', {
-            'fields': ('visibility', 'points_reward', 'is_published')
+    )
+    
+    def question_count(self, obj):
+        return obj.questions.count()
+    question_count.short_description = 'Questions'
+
+# Update your existing QuizQuestionAdmin
+@admin.register(QuizQuestion)
+class QuizQuestionAdmin(admin.ModelAdmin):
+    list_display = ('quiz', 'order', 'question_preview', 'question_type', 'points')
+    list_filter = ('quiz__course', 'question_type')
+    search_fields = ('question_text',)
+    ordering = ('quiz', 'order')
+    list_editable = ('order',)
+    
+    fieldsets = (
+        ('Question Details', {
+            'fields': ('quiz', 'order', 'question_text', 'question_type', 'points', 'explanation')
         }),
-        ('Metadata', {
-            'fields': ('created_by', 'created_at', 'updated_at', 'published_at'),
-            'classes': ('collapse',),
-        })
+        ('Answer Options', {
+            'fields': ('option_a', 'option_b', 'option_c', 'option_d'),
+            'description': 'Fill options based on question type. For True/False, use Option A for True and Option B for False.'
+        }),
+        ('Correct Answer', {
+            'fields': ('correct_answers',),
+            'description': "Single choice: 'A', Multiple select: 'A,C', True/False: 'True' or 'False'"
+        }),
+    )
+    
+    def question_preview(self, obj):
+        return obj.question_text[:100] + '...' if len(obj.question_text) > 100 else obj.question_text
+    question_preview.short_description = 'Question'
+
+# Add this new admin for QuizAttempt
+@admin.register(QuizAttempt)
+class QuizAttemptAdmin(admin.ModelAdmin):
+    list_display = ('employee', 'quiz', 'attempt_number', 'score_display', 'passed', 'started_at', 'completed_at')
+    list_filter = ('passed', 'quiz__course', 'started_at')
+    search_fields = ('employee__user__email', 'quiz__course__title')
+    readonly_fields = ('score_display', 'time_taken_display', 'answers_preview')
+    ordering = ('-started_at',)
+    
+    fieldsets = (
+        ('Attempt Information', {
+            'fields': ('employee', 'quiz', 'attempt_number')
+        }),
+        ('Results', {
+            'fields': ('score_display', 'passed', 'time_taken_display')
+        }),
+        ('Timing', {
+            'fields': ('started_at', 'completed_at')
+        }),
+        ('Answers', {
+            'fields': ('answers_preview',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    def score_display(self, obj):
+        return f"{obj.score:.1f}%"
+    score_display.short_description = 'Score'
+    
+    def time_taken_display(self, obj):
+        if obj.time_taken_seconds:
+            minutes = obj.time_taken_seconds // 60
+            seconds = obj.time_taken_seconds % 60
+            return f"{minutes}m {seconds}s"
+        return "N/A"
+    time_taken_display.short_description = 'Time Taken'
+    
+    def answers_preview(self, obj):
+        if obj.answers_data:
+            preview = []
+            for q_id, answer in obj.answers_data.items():
+                preview.append(f"Q{q_id}: {answer}")
+            return format_html('<br>'.join(preview))
+        return "No answers recorded"
+    answers_preview.short_description = 'Answers'
+
+# Add this admin for EmployeeCourseAssignment if not already present
+@admin.register(EmployeeCourseAssignment)
+class EmployeeCourseAssignmentAdmin(admin.ModelAdmin):
+    list_display = ('employee', 'course', 'status', 'progress_percentage', 'started_at', 'completed_at')
+    list_filter = ('status', 'course', 'company_course_group__company')
+    search_fields = ('employee__user__email', 'course__title')
+    readonly_fields = ('assigned_at', 'last_accessed')
+    
+    fieldsets = (
+        ('Assignment', {
+            'fields': ('company_course_group', 'employee', 'course', 'assigned_by')
+        }),
+        ('Progress', {
+            'fields': ('status', 'progress_percentage')
+        }),
+        ('Timing', {
+            'fields': ('assigned_at', 'started_at', 'completed_at', 'last_accessed', 'due_date')
+        }),
     )
     
     def save_model(self, request, obj, form, change):
         if not change:  # New object
-            obj.created_by = request.user
-        if obj.is_published and not obj.published_at:
-            obj.published_at = timezone.now()
+            obj.assigned_by = request.user
         super().save_model(request, obj, form, change)
 
-@admin.register(CompanyCourseAssignment)
-class CompanyCourseAssignmentAdmin(admin.ModelAdmin):
-    list_display = ('company', 'course', 'assigned_by', 'assigned_at')
-    list_filter = ('company', 'course')
-    readonly_fields = ('assigned_at',)
-
-@admin.register(Quiz)
-class QuizAdmin(admin.ModelAdmin):
-    list_display = ('course', 'title', 'passing_score', 'time_limit_minutes')
-
-@admin.register(QuizQuestion)
-class QuizQuestionAdmin(admin.ModelAdmin):
-    list_display = ('quiz', 'question_text_short', 'question_type', 'points')
+# You might also want to add admin for CompanyCourseGroup if needed
+@admin.register(CompanyCourseGroup)
+class CompanyCourseGroupAdmin(admin.ModelAdmin):
+    list_display = ('name', 'company', 'course_count')
+    list_filter = ('company',)
+    search_fields = ('name', 'company__name')
     
-    def question_text_short(self, obj):
-        return obj.question_text[:50] + '...' if len(obj.question_text) > 50 else obj.question_text
-    question_text_short.short_description = 'Question'
+    def course_count(self, obj):
+        return obj.courses.count()
+    course_count.short_description = 'Courses'

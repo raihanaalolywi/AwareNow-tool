@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect
 from .forms import CompanyForm, SuperAdminForm, CompanyGroupCreateForm, AddUsersToGroupForm
 from django.contrib.auth.decorators import login_required
+from django.urls import reverse 
 import uuid
 from .models import Company, User, CompanyGroup, EmployeeProfile
 from .services import send_activation_email
@@ -10,10 +11,10 @@ from .models import SubscriptionPlan
 from django.utils import timezone
 from django.db import transaction
 from django.contrib import messages
-from django.db.models import Count, Q, Avg
+from django.db.models import Count, Q, Avg, Max
 from django.http import JsonResponse
 import json
-from courses.models import CompanyCourseAssignment, Course, EmployeeCourseAssignment, EmployeeCourseProgress, QuizAttempt, CompanyCourseGroup
+from courses.models import CompanyCourseAssignment, Course, EmployeeCourseAssignment, EmployeeCourseProgress, QuizAttempt, CompanyCourseGroup, Quiz, QuizQuestion
 
 # ==== admin platform Dashboard ====
 @login_required
@@ -347,6 +348,27 @@ def view_course(request, course_id):
                 'assigned_at': timezone.now()
             }
         )
+        # In your view_course function, add this after getting the assignment:
+
+        # Check if quiz is passed and get attempts
+        quiz_passed = False
+        quiz_attempts = []
+
+        if hasattr(course, 'quiz') and course.quiz:
+            quiz = course.quiz
+            # Check if any passed quiz attempts exist
+            quiz_passed = QuizAttempt.objects.filter(
+                employee=employee_profile,
+                quiz=quiz,
+                passed=True
+            ).exists()
+            
+            # Get all attempts for this quiz
+            quiz_attempts = QuizAttempt.objects.filter(
+                employee=employee_profile,
+                quiz=quiz
+            ).order_by('-attempt_number')
+
         
         # Update last accessed time
         assignment.last_accessed = timezone.now()
@@ -363,6 +385,8 @@ def view_course(request, course_id):
             'assignment': assignment,
             'time_spent_minutes': time_spent_minutes,
             'employee_profile': employee_profile,
+            'quiz_passed': quiz_passed,  # Add this
+            'quiz_attempts': quiz_attempts,  # Add this
         }
         
         return render(request, 'account/view_course.html', context)
@@ -406,9 +430,11 @@ def update_course_progress(request, assignment_id):
     except (EmployeeCourseAssignment.DoesNotExist, EmployeeProfile.DoesNotExist):
         return JsonResponse({'success': False})
 
+# In your views.py, update the mark_course_complete function
+
 @login_required
 def mark_course_complete(request, assignment_id):
-    """Mark a course as complete"""
+    """Mark a course as complete - requires quiz to be passed"""
     if request.user.role != "EMPLOYEE" or request.method != 'POST':
         return JsonResponse({'success': False})
     
@@ -418,6 +444,24 @@ def mark_course_complete(request, assignment_id):
             employee__user=request.user
         )
         
+        # Check if course has a quiz
+        if hasattr(assignment.course, 'quiz') and assignment.course.quiz:
+            quiz = assignment.course.quiz
+            
+            # Check if employee has passed the quiz
+            passed_attempt = QuizAttempt.objects.filter(
+                employee=assignment.employee,
+                quiz=quiz,
+                passed=True
+            ).exists()
+            
+            if not passed_attempt:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'You must pass the quiz to complete this course.'
+                })
+        
+        # If no quiz or quiz passed, mark as complete
         assignment.status = 'completed'
         assignment.progress_percentage = 100
         assignment.completed_at = timezone.now()
@@ -825,3 +869,247 @@ def remove_user_from_group(request, group_id, user_id):
 
     messages.success(request, "User removed from group.")
     return redirect("account:group-detail", group_id=group.id)
+
+@login_required
+def start_quiz(request, course_id):
+    """Start or continue a quiz for a course"""
+    if request.user.role != "EMPLOYEE":
+        return redirect("account:platform-login")
+    
+    try:
+        print(f"DEBUG: Starting quiz for course_id={course_id}, user={request.user}")
+
+
+        employee_profile = EmployeeProfile.objects.get(user=request.user)
+        course = get_object_or_404(Course, id=course_id)
+        quiz = get_object_or_404(Quiz, course=course, is_active=True)
+        
+        # Check if employee has access to this course
+        assignment = get_object_or_404(
+            EmployeeCourseAssignment,
+            employee=employee_profile,
+            course=course
+        )
+
+        print(f"DEBUG: Creating QuizAttempt with quiz={quiz.id}, employee={request.user.id}")
+
+        # Get or create quiz attempt
+        last_attempt = QuizAttempt.objects.filter(
+            employee=employee_profile,
+            quiz=quiz
+        ).aggregate(Max('attempt_number'))['attempt_number__max'] or 0
+        
+        if last_attempt >= quiz.max_attempts:
+            messages.error(request, "You have used all your quiz attempts.")
+            return redirect('account:view_course', course_id=course_id)
+        
+        # Check for existing incomplete attempt
+        incomplete_attempt = QuizAttempt.objects.filter(
+            employee=employee_profile,
+            quiz=quiz,
+            completed_at__isnull=True
+        ).first()
+        
+        if incomplete_attempt:
+            # Continue existing attempt
+            attempt = incomplete_attempt
+        else:
+            # Create new attempt
+            attempt_number = last_attempt + 1
+            attempt = QuizAttempt.objects.create(
+                employee=employee_profile,
+                quiz=quiz,
+                attempt_number=attempt_number
+            )
+
+        print(f"DEBUG: QuizAttempt created with id={attempt.id}")
+
+        return redirect('account:take_quiz', attempt_id=attempt.id)
+        
+    except Exception as e:
+        print(f"ERROR in start_quiz: {type(e).__name__}: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        # Prepare questions with options - UPDATED FOR QuizQuestion
+        questions = []
+        for question in quiz.questions.all():  # This uses the related_name 'questions'
+            options = []
+            
+            # Build options based on question type
+            if question.question_type in ['multiple_choice', 'multiple_select']:
+                if question.option_a: options.append(('A', question.option_a))
+                if question.option_b: options.append(('B', question.option_b))
+                if question.option_c: options.append(('C', question.option_c))
+                if question.option_d: options.append(('D', question.option_d))
+            elif question.question_type == 'true_false':
+                options = [('True', 'True'), ('False', 'False')]
+            
+            questions.append({
+                'id': question.id,
+                'question_text': question.question_text,
+                'question_type': question.question_type,
+                'options': options,
+                'points': question.points,
+                'order': question.order,
+                'explanation': question.explanation,
+            })
+        
+        context = {
+            'course': course,
+            'quiz': quiz,
+            'attempt': attempt,
+            'attempt_number': attempt.attempt_number,
+            'questions': questions,
+            'assignment': assignment,
+            'time_limit': quiz.time_limit_minutes * 60 if quiz.time_limit_minutes > 0 else 0,
+        }
+        
+        return render(request, 'account/take_quiz.html', context)
+        
+    except (EmployeeProfile.DoesNotExist, Quiz.DoesNotExist) as e:
+        messages.error(request, "Quiz not available.")
+        return redirect('account:employee_dashboard')
+    
+
+@login_required
+def submit_quiz(request, attempt_id):
+    """Submit and grade a quiz attempt"""
+    if request.user.role != "EMPLOYEE" or request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Invalid request'})
+    
+    try:
+        attempt = get_object_or_404(
+            QuizAttempt,
+            id=attempt_id,
+            employee__user=request.user,
+            completed_at__isnull=True
+        )
+        
+        # Calculate time taken
+        time_taken = (timezone.now() - attempt.started_at).total_seconds()
+        
+        # Grade the quiz
+        total_points = 0
+        earned_points = 0
+        answers_data = {}
+        
+        for question in attempt.quiz.questions.all():  # This is QuizQuestion
+            total_points += question.points
+            
+            # Get user's answer
+            answer_key = f'question_{question.id}'
+            if question.question_type == 'multiple_select':
+                # For multiple select, get all checked values
+                user_answer = request.POST.getlist(answer_key)
+                user_answer_str = ','.join(sorted(user_answer)) if user_answer else ''
+            else:
+                # For single answer types
+                user_answer = request.POST.get(answer_key, '')
+                user_answer_str = user_answer
+            
+            # Store answer in JSON format
+            answers_data[str(question.id)] = {
+                'question_id': question.id,
+                'question_text': question.question_text[:100],
+                'user_answer': user_answer_str,
+                'correct_answers': question.correct_answers,
+                'question_type': question.question_type,
+            }
+            
+            # Check if answer is correct
+            correct_answers = [a.strip().upper() for a in question.correct_answers.split(',')]
+            user_answers = [a.strip().upper() for a in user_answer_str.split(',') if a.strip()]
+            
+            if question.question_type == 'multiple_select':
+                # For multiple select, all correct answers must be selected, no extra answers
+                if set(user_answers) == set(correct_answers):
+                    earned_points += question.points
+            else:
+                # For single answer types
+                if user_answers and user_answers[0] in correct_answers:
+                    earned_points += question.points
+        
+        # Calculate score percentage
+        score_percentage = (earned_points / total_points * 100) if total_points > 0 else 0
+        
+        # Update attempt
+        attempt.score = score_percentage
+        attempt.passed = score_percentage >= attempt.quiz.passing_score
+        attempt.completed_at = timezone.now()
+        attempt.time_taken_seconds = int(time_taken)
+        attempt.answers_data = answers_data
+        attempt.save()
+        
+        return JsonResponse({
+            'success': True,
+            'score': round(score_percentage, 1),
+            'passed': attempt.passed,
+            'passing_score': attempt.quiz.passing_score,
+            'redirect_url': reverse('account:quiz_result', args=[attempt.id])
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+    
+@login_required
+def quiz_result(request, attempt_id):
+    """Show quiz results"""
+    if request.user.role != "EMPLOYEE":
+        return redirect("account:platform-login")
+    
+    try:
+        attempt = get_object_or_404(
+            QuizAttempt,
+            id=attempt_id,
+            employee__user=request.user
+        )
+        
+        # Get detailed results from answers_data JSON
+        results = []
+        for question in attempt.quiz.questions.all():
+            question_data = attempt.answers_data.get(str(question.id), {})
+            user_answer = question_data.get('user_answer', '')
+            correct_answers = [a.strip() for a in question.correct_answers.split(',')]
+            
+            # Check if answer is correct
+            user_answers = [a.strip() for a in user_answer.split(',') if a.strip()]
+            is_correct = False
+            
+            if question.question_type == 'multiple_select':
+                is_correct = set(user_answers) == set(correct_answers)
+            else:
+                is_correct = user_answers and user_answers[0] in correct_answers
+            
+            # Get answer options
+            options = []
+            if question.question_type in ['multiple_choice', 'multiple_select']:
+                if question.option_a: options.append({'label': 'A', 'text': question.option_a})
+                if question.option_b: options.append({'label': 'B', 'text': question.option_b})
+                if question.option_c: options.append({'label': 'C', 'text': question.option_c})
+                if question.option_d: options.append({'label': 'D', 'text': question.option_d})
+            
+            results.append({
+                'question': question,
+                'user_answer': user_answer,
+                'correct_answers': correct_answers,
+                'is_correct': is_correct,
+                'points': question.points if is_correct else 0,
+                'options': options,
+                'explanation': question.explanation,
+            })
+        
+        context = {
+            'attempt': attempt,
+            'quiz': attempt.quiz,
+            'course': attempt.quiz.course,
+            'results': results,
+            'time_taken_minutes': attempt.time_taken_seconds // 60,
+            'time_taken_seconds': attempt.time_taken_seconds % 60,
+        }
+        
+        return render(request, 'account/quiz_result.html', context)
+        
+    except QuizAttempt.DoesNotExist:
+        messages.error(request, "Quiz attempt not found.")
+        return redirect('account:employee_dashboard')

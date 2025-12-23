@@ -292,6 +292,22 @@ class QuizQuestion(models.Model):
                                   help_text="Explanation shown after answering")
     
     order = models.PositiveIntegerField(default=0)
+
+    def get_options_list(self):
+        """Return list of (label, value) pairs for the options"""
+        options = []
+        
+        # Only include options that are not empty
+        if self.option_a:
+            options.append(('A', self.option_a))
+        if self.option_b:
+            options.append(('B', self.option_b))
+        if self.option_c:
+            options.append(('C', self.option_c))
+        if self.option_d:
+            options.append(('D', self.option_d))
+            
+        return options
     
     class Meta:
         ordering = ['order']
