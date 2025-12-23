@@ -1,6 +1,9 @@
 from django.db import models
 from django.utils import timezone
-import uuid 
+import uuid
+
+from account.models import CompanyGroup  # ✅ ربط القروب الحقيقي
+
 
 class EmailTemplate(models.Model):
     name = models.CharField(max_length=120)
@@ -29,7 +32,16 @@ class PhishingCampaign(models.Model):
     )
 
     title = models.CharField(max_length=150)
-    user_group = models.CharField(max_length=100)
+
+    # ✅ بدل CharField: ربط بالحقل الحقيقي CompanyGroup
+    user_group = models.ForeignKey(
+        CompanyGroup,
+        on_delete=models.PROTECT,
+        related_name="phishing_campaigns",
+        null=True,
+        blank=True
+    )
+
     sender = models.EmailField()
 
     scheduled_date = models.DateField(
@@ -56,8 +68,14 @@ class PhishingCampaign(models.Model):
 
     def __str__(self):
         return self.title
+
+
 class CampaignRecipient(models.Model):
-    campaign = models.ForeignKey("PhishingCampaign", on_delete=models.CASCADE, related_name="recipients")
+    campaign = models.ForeignKey(
+        "PhishingCampaign",
+        on_delete=models.CASCADE,
+        related_name="recipients"
+    )
     email = models.EmailField()
     token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
 
@@ -73,13 +91,17 @@ class CampaignRecipient(models.Model):
         return f"{self.email} ({self.campaign_id})"
 
     @property
-    def opened(self): return self.opened_at is not None
+    def opened(self):
+        return self.opened_at is not None
 
     @property
-    def clicked(self): return self.clicked_at is not None
+    def clicked(self):
+        return self.clicked_at is not None
 
     @property
-    def fallen(self): return self.fallen_at is not None
+    def fallen(self):
+        return self.fallen_at is not None
+
 
 class PhishingEvent(models.Model):
     class EventType(models.TextChoices):

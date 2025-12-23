@@ -15,6 +15,9 @@ from .models import PhishingCampaign, EmailTemplate, CampaignRecipient, Phishing
 from .forms import PhishingCampaignForm
 
 
+# =========================
+# Phishing List
+# =========================
 @login_required
 def phishing_list(request):
     q = request.GET.get("q", "").strip()
@@ -25,29 +28,37 @@ def phishing_list(request):
         campaigns = campaigns.filter(
             Q(title__icontains=q) |
             Q(sender__icontains=q) |
-            Q(user_group__icontains=q)
+            Q(user_group__name__icontains=q)
         )
 
+    draft_campaigns = campaigns.filter(status="draft")
     active_campaigns = campaigns.filter(status="published")
     completed_campaigns = campaigns.filter(status="completed")
 
     context = {
         "q": q,
+        "draft_campaigns": draft_campaigns,
         "active_campaigns": active_campaigns,
         "completed_campaigns": completed_campaigns,
     }
     return render(request, "campaigns/phishing/phishing_list.html", context)
 
 
+# =========================
+# Create Phishing
+# =========================
 @login_required
 def phishing_create(request):
     templates = EmailTemplate.objects.filter(is_active=True).order_by("-created_at")
 
+    company = getattr(request.user, "company", None)
+
     if request.method == "POST":
-        form = PhishingCampaignForm(request.POST)
+        form = PhishingCampaignForm(request.POST, company=company)
         if form.is_valid():
             campaign = form.save(commit=False)
 
+            # ✅ التيمبلت لازم يكون موجود وصالح
             if campaign.template_id:
                 is_ok = EmailTemplate.objects.filter(
                     id=campaign.template_id,
@@ -66,10 +77,13 @@ def phishing_create(request):
                     "templates": templates,
                 })
 
+            # ✅ الافتراضي Draft (حتى لو أحد حاول يمرر status)
+            campaign.status = "draft"
+
             campaign.save()
             return redirect("campaigns:phishing")
     else:
-        form = PhishingCampaignForm()
+        form = PhishingCampaignForm(company=company)
 
     return render(request, "campaigns/phishing/phishing_create.html", {
         "form": form,
@@ -77,6 +91,9 @@ def phishing_create(request):
     })
 
 
+# =========================
+# Template Preview
+# =========================
 @login_required
 def template_preview(request, pk):
     t = get_object_or_404(EmailTemplate, pk=pk, is_active=True)
@@ -96,7 +113,6 @@ def template_preview(request, pk):
 # =========================
 # Tracking Views
 # =========================
-
 def track_open(request, token):
     recipient = get_object_or_404(CampaignRecipient, token=token)
 
@@ -164,6 +180,11 @@ def track_fall(request, token):
         user_agent=(request.META.get("HTTP_USER_AGENT", "") or "")[:512],
     )
 
+    # ✅ Auto move campaign to Completed when someone falls
+    if recipient.campaign.status != "completed":
+        recipient.campaign.status = "completed"
+        recipient.campaign.save(update_fields=["status"])
+
     return HttpResponse(
         """
         <div style="font-family:system-ui;max-width:680px;margin:40px auto;padding:24px;border:1px solid #e5e7eb;border-radius:16px;">
@@ -177,47 +198,75 @@ def track_fall(request, token):
 
 
 # =========================
-# ✅ Publish & Send Emails (NEW)
+# Publish & Send Emails (Draft -> Active)
 # =========================
-
 @login_required
 def publish_and_send(request, campaign_id):
     campaign = get_object_or_404(PhishingCampaign, id=campaign_id)
 
-    # Publish
-    if campaign.status != "published":
-        campaign.status = "published"
-        campaign.save(update_fields=["status"])
+    # ✅ لازم تكون Draft فقط
+    if campaign.status != "draft":
+        return HttpResponse("Campaign is not in draft.", status=400)
 
     if not campaign.template_id:
         return HttpResponse("Campaign has no template.", status=400)
 
-    recipients = CampaignRecipient.objects.filter(campaign=campaign)
-    if not recipients.exists():
-        return HttpResponse(
-            "No recipients found for this campaign. Add CampaignRecipient first.",
-            status=400
+    if not campaign.user_group_id:
+        return HttpResponse("Campaign has no user group.", status=400)
+
+    group = campaign.user_group
+    group_users = (
+        group.users
+        .filter(is_disabled=False)
+        .exclude(email__isnull=True)
+        .exclude(email="")
+        .distinct()
+    )
+
+    if not group_users.exists():
+        return HttpResponse("Selected group has no users with emails.", status=400)
+
+    # جهزي recipients
+    for u in group_users:
+        CampaignRecipient.objects.get_or_create(
+            campaign=campaign,
+            email=u.email
         )
 
+    recipients = CampaignRecipient.objects.filter(campaign=campaign).order_by("email")
+    now = timezone.now()
+
     for r in recipients:
+        # ✅ لا تعيدين إرسال نفس الشخص مرتين
+        if r.sent_at is not None:
+            continue
+
         open_url = request.build_absolute_uri(
             reverse("campaigns:track-open", args=[r.token])
         )
+
+        # هذا هو الـ FALL الحقيقي
         fall_url = request.build_absolute_uri(
             reverse("campaigns:track-fall", args=[r.token])
         )
 
-        # ✅ الزر يروح للأويرنس مباشرة
+        # ✅ CLICK tracker يودّي للـ fall_url
+        encoded_fall = base64.urlsafe_b64encode(fall_url.encode()).decode()
+        click_url = request.build_absolute_uri(
+            reverse("campaigns:track-click", args=[r.token])
+        ) + f"?u={encoded_fall}"
+
         ctx = Context({
             "first_name": "Hanan",
             "company": "AwareNow",
-            "tracking_url": fall_url,
+            # ✅ أهم سطر: خليه يروح للـ CLICK tracking
+            "tracking_url": click_url,
             "recipient_email": r.email,
         })
 
         html_body = Template(campaign.template.html_content).render(ctx)
 
-        # Open pixel (يسجل فتح)
+        # ✅ Open pixel
         html_body += f'<img src="{open_url}" width="1" height="1" style="display:none" alt=""/>'
 
         msg = EmailMultiAlternatives(
@@ -230,7 +279,39 @@ def publish_and_send(request, campaign_id):
         msg.attach_alternative(html_body, "text/html")
         msg.send(fail_silently=False)
 
-        r.sent_at = timezone.now()
+        r.sent_at = now
         r.save(update_fields=["sent_at"])
 
+    # ✅ بعد الإرسال: تتحول Published (Active)
+    campaign.status = "published"
+    campaign.save(update_fields=["status"])
+
     return redirect("campaigns:phishing")
+
+
+
+# Report
+
+@login_required
+def phishing_report(request, campaign_id):
+    campaign = get_object_or_404(PhishingCampaign, id=campaign_id)
+
+    recipients = CampaignRecipient.objects.filter(campaign=campaign).order_by("email")
+
+    totals = {
+        "total": recipients.count(),
+        "opened": recipients.filter(opened_at__isnull=False).count(),
+        "clicked": recipients.filter(clicked_at__isnull=False).count(),
+        "fallen": recipients.filter(fallen_at__isnull=False).count(),
+        "no_action": recipients.filter(
+            opened_at__isnull=True,
+            clicked_at__isnull=True,
+            fallen_at__isnull=True
+        ).count(),
+    }
+
+    return render(request, "campaigns/phishing/phishing_report.html", {
+        "campaign": campaign,
+        "recipients": recipients,
+        "totals": totals,
+    })

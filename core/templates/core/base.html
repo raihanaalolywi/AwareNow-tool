@@ -128,13 +128,19 @@
     </a>
   </li>
 
-  <li class="nav-item">
-    <a class="nav-link nav-secondary" href="#">Library</a>
-  </li>
+    <!-- <li class="nav-item">
+      <a class="nav-link nav-secondary" href="#">Library</a>
+    </li> -->
 
-  <li class="nav-item">
-    <a class="nav-link nav-secondary" href="#">Policies</a>
-  </li>
+    <li class="nav-item">
+      <a class="nav-link nav-secondary
+         {% if request.resolver_match.app_name == 'policies' %}
+           active-nav
+         {% endif %}"
+         href="{% url 'policies:policy_list' %}">
+        Policies
+      </a>
+    </li>
 
   <!-- Campaigns (Single link – no dropdown) -->
   <li class="nav-item">
@@ -166,19 +172,13 @@
     </a>
   </li>
 
-  <!-- Library -->
-  <li class="nav-item">
-    <a class="nav-link nav-secondary text-center" href="#">
-      Library
-    </a>
-  </li>
 
   <!-- Policies -->
-  <li class="nav-item">
-    <a class="nav-link nav-secondary text-center" href="#">
+<li class="nav-item">
+  <a class="nav-link nav-secondary text-center" href="{% url 'policies:policy_list' %}">
       Policies
-    </a>
-  </li>
+  </a>
+</li>
 
   <!-- Campaigns (Single link – no dropdown) -->
   <li class="nav-item">
