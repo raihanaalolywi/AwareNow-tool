@@ -1,0 +1,142 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/phishing.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="ph-wrap">
+  <div class="ph-header">
+    <div class="ph-title">
+      <span class="ph-bar"></span>
+      <h1>Create phishing</h1>
+    </div>
+  </div>
+
+  <div class="ph-create-grid">
+
+    <!-- ===== Left: Form ===== -->
+    <div class="ph-form-card">
+      <form method="post" class="row g-3">
+        {% csrf_token %}
+
+        <div class="col-12">
+          <label class="form-label">Title</label>
+          {{ form.title }}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Select user group</label>
+          {{ form.user_group }}
+        </div>
+
+        <div class="col-12">
+          <label class="form-label">Sender</label>
+          {{ form.sender }}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Select date</label>
+          {{ form.scheduled_date }}
+        </div>
+
+        <div class="col-md-6">
+          <label class="form-label">Status</label>
+          {{ form.status }}
+        </div>
+
+        <!-- ✅ Hidden field (ForeignKey template) -->
+        {{ form.template }}
+
+        <div class="col-12 d-flex gap-2 justify-content-end">
+          <a class="btn btn-outline-dark" href="{% url 'campaigns:phishing' %}">Cancel</a>
+          <button class="btn btn-dark" type="submit">Save</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ===== Right: Templates ===== -->
+    <div class="ph-templates">
+      <div class="d-flex align-items-center justify-content-between mt-4">
+        <h2 class="m-0">Select Template</h2>
+        <small class="text-muted">Click a card to select</small>
+      </div>
+
+      <div class="row g-3 mt-2">
+        {% for t in templates %}
+          <div class="col-12 col-md-6 col-lg-3">
+            <div class="card h-100 shadow-sm template-card"
+                 data-template-id="{{ t.id }}"
+                 style="cursor:pointer; position:relative;">
+
+              <span class="badge bg-dark"
+                    style="position:absolute; top:10px; right:10px; z-index:2; display:none;"
+                    data-selected-badge>
+                Selected
+              </span>
+
+              {% if t.preview_image %}
+                <img src="{{ t.preview_image.url }}"
+                     class="card-img-top"
+                     style="height:160px;object-fit:cover;">
+              {% else %}
+                <div style="height:160px;background:#f1f3f5;"
+                     class="d-flex align-items-center justify-content-center">
+                  <span class="text-muted">No preview</span>
+                </div>
+              {% endif %}
+
+              <div class="card-body">
+                <h6 class="mb-1">{{ t.name }}</h6>
+                <p class="text-muted small mb-2">
+                  {{ t.subject|default:"(no subject yet)" }}
+                </p>
+
+                <a href="{% url 'campaigns:template-preview' t.id %}"
+                   target="_blank"
+                   class="btn btn-sm btn-outline-dark">
+                  Preview
+                </a>
+              </div>
+            </div>
+          </div>
+        {% empty %}
+          <p class="text-muted">No templates yet. Add templates first.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== JS: select template ===== -->
+<script>
+  (function () {
+    const cards = document.querySelectorAll(".template-card");
+    const hiddenInput = document.querySelector("input[name='template']");
+
+    function clearSelection() {
+      cards.forEach(c => {
+        c.classList.remove("border", "border-3", "border-dark");
+        const badge = c.querySelector("[data-selected-badge]");
+        if (badge) badge.style.display = "none";
+      });
+    }
+
+    cards.forEach(card => {
+      card.addEventListener("click", (e) => {
+        if (e.target && e.target.closest("a")) return;
+
+        clearSelection();
+        card.classList.add("border", "border-3", "border-dark");
+
+        const badge = card.querySelector("[data-selected-badge]");
+        if (badge) badge.style.display = "inline-block";
+
+        if (hiddenInput) hiddenInput.value = card.dataset.templateId;
+      });
+    });
+  })();
+</script>
+{% endblock %}

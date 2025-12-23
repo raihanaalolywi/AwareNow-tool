@@ -13,21 +13,14 @@
     // Hover dropdown (Desktop only)
     const isDesktop = () => window.matchMedia("(min-width: 992px)").matches;
   
-    document.querySelectorAll(".an-hover-dropdown").forEach((dd) => {
-      const toggle = dd.querySelector('[data-bs-toggle="dropdown"]');
-      if (!toggle) return;
-  
-      let bsDropdown = bootstrap.Dropdown.getOrCreateInstance(toggle);
-  
-      dd.addEventListener("mouseenter", () => {
-        if (!isDesktop()) return;
-        bsDropdown.show();
+    document.querySelectorAll(".an-template-card").forEach(card => {
+      card.addEventListener("click", () => {
+        document.querySelectorAll(".an-template-card").forEach(c => c.classList.remove("is-selected"));
+        card.classList.add("is-selected");
+    
+        const id = card.getAttribute("data-template-id");
+        const input = document.getElementById("templateIdInput");
+        if (input) input.value = id;
       });
-  
-      dd.addEventListener("mouseleave", () => {
-        if (!isDesktop()) return;
-        bsDropdown.hide();
-      });
-    });
+    });    
   })();
-  

@@ -1,4 +1,4 @@
-/* @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
 :root{
   --brand: #7b1020;
@@ -14,9 +14,9 @@ body{
   background: var(--bg);
   color: var(--text);
   font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-} */
+} 
 
-/* .an-navbar{
+.an-navbar{
   transition: box-shadow 200ms ease;
 }
 
@@ -105,4 +105,4 @@ body{
 
 .an-btn{
   border-radius: 12px;
-} */
+} 

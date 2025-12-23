@@ -181,17 +181,18 @@
 
         <!-- Users -->
         <li class="nav-item">
-          <a class="nav-link nav-secondary text-center" href="#">
+          <a class="nav-link nav-secondary text-center"
+             href="{% url 'account:company-users' %}">
             Users
           </a>
-        </li>
+        </li>      
 
         <!-- Library -->
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <a class="nav-link nav-secondary text-center" href="#">
             Library
           </a>
-        </li>
+        </li> -->
 
         <!-- Policies -->
         <li class="nav-item">
@@ -202,6 +203,14 @@
 
         <!-- Campaigns items (بدون Dropdown) -->
         <li class="nav-item">
+          <a class="nav-link nav-secondary text-center {% if request.resolver_match.app_name == 'campaigns' and request.resolver_match.url_name == 'phishing' %}active-nav{% endif %}"
+             href="{% url 'campaigns:phishing' %}">
+            Campaigns
+          </a>
+        </li>
+      
+      
+        <!-- <li class="nav-item">
           <a class="nav-link nav-secondary text-center" href="#">
             Phishing Awareness
           </a>
@@ -211,7 +220,7 @@
           <a class="nav-link nav-secondary text-center" href="#">
             Security Awareness
           </a>
-        </li>
+        </li> -->
 
         <!-- Logout -->
         <li class="nav-item mt-2">

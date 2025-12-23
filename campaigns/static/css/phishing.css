@@ -1,0 +1,213 @@
+/* =========================
+   PHISHING (LIST + CREATE)
+   ========================= */
+
+   .ph-wrap{
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 0 16px;
+  }
+  
+  .ph-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:16px;
+    margin-bottom: 24px;
+  }
+  
+  .ph-title{
+    display:flex;
+    align-items:center;
+    gap:12px;
+  }
+  .ph-title h1{
+    font-size: 28px;
+    margin:0;
+  }
+  .ph-bar{
+    width:6px;
+    height:28px;
+    background:#111827;
+    border-radius: 999px;
+  }
+  
+  .ph-search{
+    display:flex;
+    gap:10px;
+    align-items:center;
+  }
+  .ph-search input{
+    width: 320px;
+  }
+  
+  .ph-section-label{
+    margin-bottom: 12px;
+  }
+  
+  .ph-active-card{
+    background:#e5e7eb;
+    border-radius: 16px;
+    padding: 22px;
+    min-height: 120px;
+  }
+  
+  .ph-active-card.completed {
+    background: #f3f4f6;
+    opacity: 0.95;
+  }
+  
+  .ph-empty{
+    padding: 18px;
+    border: 1px dashed #d1d5db;
+    border-radius: 14px;
+    color:#6b7280;
+  }
+  
+  /* ====== List cards grid ====== */
+  .ph-grid{
+    display:grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap:16px;
+  }
+  
+  .ph-card{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+  }
+  
+  .ph-card-title{
+    font-size: 20px;
+    margin-bottom: 8px;
+  }
+  
+  .ph-card-text{
+    color:#6b7280;
+    font-size: 13px;
+    min-height: 56px;
+  }
+  
+  .ph-card-footer{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-top: 10px;
+  }
+  
+  .ph-pagination-hint{
+    color:#6b7280;
+    font-size: 13px;
+  }
+  
+  /* =========================
+     CREATE PHISHING (FIXED)
+     Form فوق + Templates تحت
+     ========================= */
+  
+  /* ✅ هذا أهم تعديل: بدل عمودين (يمين/يسار) نخليها عمودي */
+  .ph-create-grid{
+    display:flex;
+    flex-direction:column;
+    gap: 28px;
+    align-items: stretch;
+  }
+  
+  /* بطاقة الفورم */
+  .ph-form-card{
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius: 18px;
+    padding: 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+  }
+  
+  /* اخفاء حقل template لأنه ينعبي بالضغط على الكرت */
+  .ph-form-card input[name="template"],
+  .ph-form-card select[name="template"]{
+    display:none !important;
+  }
+  
+  .ph-subtitle{
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+  
+  /* =========================
+     TEMPLATES (Bootstrap Cards)
+     .row + .col-* + .template-card
+     ========================= */
+  
+  .template-card{
+    border-radius: 18px !important;
+    border: 1px solid #e5e7eb !important;
+    overflow: hidden;
+    transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    will-change: transform;
+    background: #fff;
+  }
+  
+  /* Hover animation */
+  .template-card:hover{
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 18px 36px rgba(0,0,0,0.12) !important;
+    border-color: rgba(17, 24, 39, 0.35) !important;
+  }
+  
+  /* Selected state (JS يضيف border-dark) */
+  .template-card.border-dark{
+    border-color: #111827 !important;
+    box-shadow: 0 18px 40px rgba(17,24,39,0.14) !important;
+  }
+  
+  /* ✅ نخلي الكروت أقرب للمربعات (بدل مستطيلات طويلة) */
+  .template-card .card-img-top{
+    height: 120px !important;
+    object-fit: cover !important;
+  }
+  
+  /* body spacing */
+  .template-card .card-body{
+    padding: 14px 14px 16px !important;
+  }
+  
+  .template-card h6{
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+  
+  .template-card p{
+    color: #6b7280 !important;
+    line-height: 1.35;
+    min-height: 40px; /* يخلي الكروت متساوية */
+  }
+  
+  /* زر Preview */
+  .template-card .btn-outline-dark{
+    border-radius: 12px;
+    padding: 7px 12px;
+    font-weight: 700;
+  }
+  
+  /* شكل الـ Selected badge */
+  .template-card [data-selected-badge]{
+    border-radius: 999px !important;
+    padding: 8px 12px !important;
+    font-weight: 700;
+  }
+  
+  /* =========================
+     Responsive
+     ========================= */
+  @media (max-width: 1100px){
+    .ph-grid{ grid-template-columns: repeat(2, 1fr); }
+    .ph-search input{ width: 220px; }
+  }
+  
+  @media (max-width: 700px){
+    .ph-grid{ grid-template-columns: 1fr; }
+  }
+  

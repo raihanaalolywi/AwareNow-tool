@@ -1,0 +1,87 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/phishing.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="ph-wrap">
+  <div class="ph-header">
+    <div class="ph-title">
+      <span class="ph-bar"></span>
+      <h1>Phishing Page</h1>
+    </div>
+
+    <form class="ph-search" method="get">
+      <input name="q" value="{{ q }}" type="text" placeholder="Search..." class="form-control">
+      <button class="btn btn-dark" type="submit">Search</button>
+      <a class="btn btn-outline-dark" href="{% url 'campaigns:phishing-create' %}">+ Create Phishing</a>
+    </form>
+  </div>
+
+  <!-- Active -->
+  <div class="ph-section">
+    <div class="ph-section-label">
+      <span class="badge rounded-pill text-bg-dark">Active</span>
+    </div>
+
+    {% if active_campaigns %}
+    {% for c in active_campaigns %}
+      <div class="ph-active-card mb-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="ph-card-title">{{ c.title }}</div>
+            <div class="ph-pagination-hint">
+              Group: {{ c.user_group }} • Sender: {{ c.sender }} • Date: {{ c.scheduled_date|default:"-" }}
+            </div>
+          </div>
+          <div class="d-flex gap-2 align-items-center">
+            <span class="badge bg-dark">Published</span>
+          
+            <a href="{% url 'campaigns:publish-send' c.id %}"
+            class="btn btn-sm btn-outline-dark"
+            onclick="return confirm('Publish & send phishing emails?')">
+            Send Emails
+           </a>         
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="ph-empty">No active (published) campaigns.</div>
+  {% endif %}  
+  </div>
+
+  <!-- Completed -->
+  <div class="ph-section mt-4">
+    <div class="ph-section-label d-flex align-items-center justify-content-between">
+      <span class="badge rounded-pill text-bg-light border">Completed</span>
+      <div class="ph-pagination-hint">‹ 1 2 3 ›</div>
+    </div>
+
+    <div class="ph-grid">
+      {% if completed_campaigns %}
+      {% for c in completed_campaigns %}
+        <div class="ph-active-card mb-3">
+          <div class="d-flex align-items-center justify-content-between">
+            <div>
+              <div class="ph-card-title">{{ c.title }}</div>
+              <div class="ph-pagination-hint">
+                Group: {{ c.user_group }} •
+                Sender: {{ c.sender }} •
+                Date: {{ c.scheduled_date|default:"-" }}
+              </div>
+            </div>
+    
+            <span class="badge bg-secondary">Completed</span>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div class="ph-empty">No completed campaigns.</div>
+    {% endif %}     
+    </div>
+  </div>
+</div>
+{% endblock %}
