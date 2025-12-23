@@ -208,3 +208,15 @@ body{
   border: none;
   background: var(--border);
 }
+
+.btn-outline-brand {
+  border: 1px solid var(--brand);
+  color: var(--brand);
+  background: transparent;
+}
+
+.btn-outline-brand:hover {
+  background: var(--brand);
+  color: #fff;
+}
+

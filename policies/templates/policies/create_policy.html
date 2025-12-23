@@ -1,0 +1,102 @@
+{% extends "core/base.html" %}
+{% block title %}Create Policy{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body">
+
+      <h5 class="fw-bold mb-1">Create Policy</h5>
+      <p class="text-muted small mb-4">
+        Define company policies and assign them to employees
+      </p>
+
+      <form method="post">
+        {% csrf_token %}
+
+        <!-- Title -->
+        <div class="mb-3">
+          <label class="form-label fw-medium">Policy Title</label>
+          <input type="text" name="title" class="form-control" required>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-4">
+          <label class="form-label fw-medium">Description</label>
+          <textarea name="description" rows="4" class="form-control" required></textarea>
+        </div>
+
+        <!-- Audience -->
+        <div class="mb-3">
+          <label class="form-label fw-medium">Audience</label>
+
+          <div class="form-check">
+            <input class="form-check-input"
+                   type="radio"
+                   name="audience"
+                   value="all"
+                   checked
+                   data-bs-toggle="collapse"
+                   data-bs-target="#groupSelect">
+            <label class="form-check-label">
+              All Employees
+            </label>
+          </div>
+
+          <div class="form-check mt-2">
+            <input class="form-check-input"
+                   type="radio"
+                   name="audience"
+                   value="groups"
+                   data-bs-toggle="collapse"
+                   data-bs-target="#groupSelect">
+            <label class="form-check-label">
+              Specific User Groups
+            </label>
+          </div>
+        </div>
+
+        <!-- Groups (Collapse) -->
+        <div class="collapse mt-3" id="groupSelect">
+          <div class="border rounded p-3">
+            <small class="text-muted d-block mb-2">
+              Select user groups
+            </small>
+
+            <div class="row">
+              {% for group in groups %}
+              <div class="col-md-4 mb-2">
+                <div class="form-check">
+                  <input class="form-check-input"
+                         type="checkbox"
+                         name="groups"
+                         value="{{ group.id }}">
+                  <label class="form-check-label">
+                    {{ group.name }}
+                    <small class="text-muted">({{ group.users.count }} users)</small>
+                  </label>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="mt-4 d-flex gap-2">
+          <button type="submit" class="btn btn-brand px-4">
+            Publish Policy
+          </button>
+          <a href="{% url 'policies:company_policies' %}" class="btn btn-outline-secondary">
+            Cancel
+          </a>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}

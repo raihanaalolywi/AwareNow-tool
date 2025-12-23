@@ -1,4 +1,4 @@
-{% extends "core/base.html" %}
+<!-- {% extends "core/base.html" %}
 {% load static %}
 
 {% block title %}
@@ -12,7 +12,6 @@ Policies
 {% block content %}
 <div class="pl-page">
 
-    <!-- Header -->
     <div class="pl-header">
         <h2 class="pl-title">Policies</h2>
 
@@ -24,7 +23,6 @@ Policies
 
     </div>
 
-    <!-- All Policies -->
     <div class="pl-section">
         <h3 class="pl-subtitle">All Policies</h3>
 
@@ -36,12 +34,6 @@ Policies
                     <p class="pl-card-desc">
                         {{ policy.description|truncatechars:120 }}
                     </p>
-
-                    <!-- <div class="pl-card-actions">
-                        <a href="{% url 'policies:policy_detail' policy.id %}" class="pl-detail-btn">
-                            View Details
-                        </a>
-                    </div> -->
 
                     <div class="pl-card-actions">
 
@@ -65,8 +57,6 @@ Policies
                 <p class="pl-empty">No policies found.</p>
             {% endfor %}
         </div>
-
-        <!-- Pagination (Numbers) -->
         {% if policies.paginator.num_pages > 1 %}
         <div class="pl-pagination">
 
@@ -91,4 +81,4 @@ Policies
 
     </div>
 </div>
-{% endblock %}
+{% endblock %} -->

@@ -12,21 +12,27 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="fw-bold mb-0">Groups</h3>
+            <h3 class="fw-bold mb-0">User Groups</h3>
             <small class="text-muted">
                 Manage user groups
             </small>
         </div>
 
-        <button class="btn btn-dark"
+        <!-- <button class="btn btn-dark"
                 data-bs-toggle="collapse"
                 data-bs-target="#createGroupForm">
             + Create Group
+        </button> -->
+        <button class="btn btn-brand"
+                data-bs-toggle="collapse"
+                data-bs-target="#createGroupForm">
+        + Create Group
         </button>
+
     </div>
 
     <!-- ========= Tab -> user group ======= -->
-    <ul class="nav nav-pills users-tabs mb-4">
+    <!-- <ul class="nav nav-pills users-tabs mb-4">
         <li class="nav-item">
             <a class="nav-link {% if request.resolver_match.url_name == 'company-users' %}active{% endif %}"
                href="{% url 'account:company-users' %}">
@@ -39,8 +45,22 @@
                 Groups
             </a>
         </li>
-    </ul>
-
+    </ul> -->
+    <ul class="nav users-tabs mb-4">
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'company-users' %}active{% endif %}"
+             href="{% url 'account:company-users' %}">
+            Users
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'company-groups' %}active{% endif %}"
+             href="{% url 'account:company-groups' %}">
+            Groups
+          </a>
+        </li>
+      </ul>   
+    
     <!-- Create Group (Collapse) -->
     <div id="createGroupForm" class="collapse mb-4">
         <div class="card border-0 shadow-sm p-4">
@@ -74,7 +94,7 @@
                 
 
                 <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit" class="btn btn-brand">
                         Create Group
                     </button>
                 </div>
@@ -108,7 +128,7 @@
                             {{ group.users.count }}
                         </td>
 
-                        <td class="text-end">
+                        <!-- <td class="text-end">
                             <a href="{% url 'account:group-detail' group.id %}"
                                class="btn btn-sm btn-outline-dark">
                                 View
@@ -123,7 +143,35 @@
                             {% else %}
                                 <span class="text-muted small ms-2">-</span>
                             {% endif %}
-                        </td>
+                        </td> -->
+                        <td class="text-end">
+                            <div class="dropdown">
+                              <button class="btn btn-sm btn-light"
+                                      data-bs-toggle="dropdown">
+                                ⋮
+                              </button>
+                          
+                              <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                  <a class="dropdown-item"
+                                     href="{% url 'account:group-detail' group.id %}">
+                                    View
+                                  </a>
+                                </li>
+                          
+                                {% if not group.is_system %}
+                                <li>
+                                  <a class="dropdown-item text-danger"
+                                     href="{% url 'account:delete-group' group.id %}"
+                                     onclick="return confirm('Delete this group?')">
+                                    Delete
+                                  </a>
+                                </li>
+                                {% endif %}
+                              </ul>
+                            </div>
+                          </td>
+                          
                     </tr>
                     {% empty %}
                     <tr>
