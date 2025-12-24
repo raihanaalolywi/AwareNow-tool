@@ -276,212 +276,8 @@
                                                             </span>
                                                         </div>
                                                     </div>
-                                                    
                                                     <!-- Question Text -->
-                                                    <p class="fw-medium mb-3">{{ question.question_text }}</p>
-                                                    
-                                                    <!-- MCQ/True False Questions -->
-                                                    {% if question.question_type == 'MCQ' or question.question_type == 'TF' %}
-                                                        <div class="question-options mb-3">
-                                                            <h6 class="small fw-bold text-muted mb-2">Answer Options:</h6>
-                                                            
-                                                            {% if question.option1 %}
-                                                                <div class="option-item mb-2 p-2 rounded {% if question.correct_answer == '1' %}correct-option{% else %}incorrect-option{% endif %}">
-                                                                    <div class="d-flex align-items-center">
-                                                                        <div class="option-indicator me-2">
-                                                                            <span class="option-letter fw-bold">A</span>
-                                                                        </div>
-                                                                        <span class="option-text flex-grow-1">{{ question.option1 }}</span>
-                                                                        {% if question.correct_answer == '1' %}
-                                                                            <div class="correct-badge ms-2">
-                                                                                <span class="badge bg-success">
-                                                                                    <i class="fas fa-check me-1"></i>Correct
-                                                                                </span>
-                                                                            </div>
-                                                                        {% else %}
-                                                                            <div class="incorrect-badge ms-2">
-                                                                                <span class="badge bg-light text-muted border">
-                                                                                    Incorrect
-                                                                                </span>
-                                                                            </div>
-                                                                        {% endif %}
-                                                                    </div>
-                                                                </div>
-                                                            {% endif %}
-                                                            
-                                                            {% if question.option2 %}
-                                                                <div class="option-item mb-2 p-2 rounded {% if question.correct_answer == '2' %}correct-option{% else %}incorrect-option{% endif %}">
-                                                                    <div class="d-flex align-items-center">
-                                                                        <div class="option-indicator me-2">
-                                                                            <span class="option-letter fw-bold">B</span>
-                                                                        </div>
-                                                                        <span class="option-text flex-grow-1">{{ question.option2 }}</span>
-                                                                        {% if question.correct_answer == '2' %}
-                                                                            <div class="correct-badge ms-2">
-                                                                                <span class="badge bg-success">
-                                                                                    <i class="fas fa-check me-1"></i>Correct
-                                                                                </span>
-                                                                            </div>
-                                                                        {% else %}
-                                                                            <div class="incorrect-badge ms-2">
-                                                                                <span class="badge bg-light text-muted border">
-                                                                                    Incorrect
-                                                                                </span>
-                                                                            </div>
-                                                                        {% endif %}
-                                                                    </div>
-                                                                </div>
-                                                            {% endif %}
-                                                            
-                                                            {% if question.option3 %}
-                                                                <div class="option-item mb-2 p-2 rounded {% if question.correct_answer == '3' %}correct-option{% else %}incorrect-option{% endif %}">
-                                                                    <div class="d-flex align-items-center">
-                                                                        <div class="option-indicator me-2">
-                                                                            <span class="option-letter fw-bold">C</span>
-                                                                        </div>
-                                                                        <span class="option-text flex-grow-1">{{ question.option3 }}</span>
-                                                                        {% if question.correct_answer == '3' %}
-                                                                            <div class="correct-badge ms-2">
-                                                                                <span class="badge bg-success">
-                                                                                    <i class="fas fa-check me-1"></i>Correct
-                                                                                </span>
-                                                                            </div>
-                                                                        {% else %}
-                                                                            <div class="incorrect-badge ms-2">
-                                                                                <span class="badge bg-light text-muted border">
-                                                                                    Incorrect
-                                                                                </span>
-                                                                            </div>
-                                                                        {% endif %}
-                                                                    </div>
-                                                                </div>
-                                                            {% endif %}
-                                                            
-                                                            {% if question.option4 %}
-                                                                <div class="option-item mb-2 p-2 rounded {% if question.correct_answer == '4' %}correct-option{% else %}incorrect-option{% endif %}">
-                                                                    <div class="d-flex align-items-center">
-                                                                        <div class="option-indicator me-2">
-                                                                            <span class="option-letter fw-bold">D</span>
-                                                                        </div>
-                                                                        <span class="option-text flex-grow-1">{{ question.option4 }}</span>
-                                                                        {% if question.correct_answer == '4' %}
-                                                                            <div class="correct-badge ms-2">
-                                                                                <span class="badge bg-success">
-                                                                                    <i class="fas fa-check me-1"></i>Correct
-                                                                                </span>
-                                                                            </div>
-                                                                        {% else %}
-                                                                            <div class="incorrect-badge ms-2">
-                                                                                <span class="badge bg-light text-muted border">
-                                                                                    Incorrect
-                                                                                </span>
-                                                                            </div>
-                                                                        {% endif %}
-                                                                    </div>
-                                                                </div>
-                                                            {% endif %}
-                                                            
-                                                            <!-- True/False specific -->
-                                                            {% if question.question_type == 'TF' %}
-                                                                {% if not question.option1 and not question.option2 %}
-                                                                    <!-- Show default True/False options if not custom -->
-                                                                    <div class="option-item mb-2 p-2 rounded {% if question.correct_answer == 'True' %}correct-option{% else %}incorrect-option{% endif %}">
-                                                                        <div class="d-flex align-items-center">
-                                                                            <div class="option-indicator me-2">
-                                                                                <span class="option-letter fw-bold">A</span>
-                                                                            </div>
-                                                                            <span class="option-text flex-grow-1">True</span>
-                                                                            {% if question.correct_answer == 'True' %}
-                                                                                <div class="correct-badge ms-2">
-                                                                                    <span class="badge bg-success">
-                                                                                        <i class="fas fa-check me-1"></i>Correct
-                                                                                    </span>
-                                                                                </div>
-                                                                            {% else %}
-                                                                                <div class="incorrect-badge ms-2">
-                                                                                    <span class="badge bg-light text-muted border">
-                                                                                        Incorrect
-                                                                                    </span>
-                                                                                </div>
-                                                                            {% endif %}
-                                                                        </div>
-                                                                    </div>
-                                                                    
-                                                                    <div class="option-item mb-2 p-2 rounded {% if question.correct_answer == 'False' %}correct-option{% else %}incorrect-option{% endif %}">
-                                                                        <div class="d-flex align-items-center">
-                                                                            <div class="option-indicator me-2">
-                                                                                <span class="option-letter fw-bold">B</span>
-                                                                            </div>
-                                                                            <span class="option-text flex-grow-1">False</span>
-                                                                            {% if question.correct_answer == 'False' %}
-                                                                                <div class="correct-badge ms-2">
-                                                                                    <span class="badge bg-success">
-                                                                                        <i class="fas fa-check me-1"></i>Correct
-                                                                                    </span>
-                                                                                </div>
-                                                                            {% else %}
-                                                                                <div class="incorrect-badge ms-2">
-                                                                                    <span class="badge bg-light text-muted border">
-                                                                                        Incorrect
-                                                                                    </span>
-                                                                                </div>
-                                                                            {% endif %}
-                                                                        </div>
-                                                                    </div>
-                                                                {% endif %}
-                                                            {% endif %}
-                                                        </div>
-                                                        
-                                                        <!-- Answer Summary -->
-                                                        <div class="answer-summary p-3 bg-light rounded border">
-                                                            <h6 class="fw-bold text-success mb-1">
-                                                                <i class="fas fa-check-circle me-1"></i>
-                                                                Correct Answer
-                                                            </h6>
-                                                            <p class="mb-0 small">
-                                                                {% if question.correct_answer == '1' %}A. {{ question.option1|default:"True" }}
-                                                                {% elif question.correct_answer == '2' %}B. {{ question.option2|default:"False" }}
-                                                                {% elif question.correct_answer == '3' %}C. {{ question.option3 }}
-                                                                {% elif question.correct_answer == '4' %}D. {{ question.option4 }}
-                                                                {% elif question.correct_answer == 'True' %}True
-                                                                {% elif question.correct_answer == 'False' %}False
-                                                                {% else %}{{ question.correct_answer }}
-                                                                {% endif %}
-                                                            </p>
-                                                        </div>
-                                                        
-                                                    {% elif question.question_type == 'SA' %}
-                                                        <!-- Short Answer Questions -->
-                                                        <div class="short-answer-section">
-                                                            <div class="mb-3">
-                                                                <span class="badge bg-info mb-2">Short Answer Question</span>
-                                                                <p class="text-muted small mb-3">
-                                                                    <i class="fas fa-pencil-alt me-1"></i>
-                                                                    Employees must provide a written answer for this question.
-                                                                </p>
-                                                            </div>
-                                                            
-                                                            {% if question.correct_answer %}
-                                                                <div class="answer-summary p-3 bg-light rounded border">
-                                                                    <h6 class="fw-bold text-success mb-1">
-                                                                        <i class="fas fa-lightbulb me-1"></i>
-                                                                        Expected Answer:
-                                                                    </h6>
-                                                                    <p class="mb-0">{{ question.correct_answer }}</p>
-                                                                </div>
-                                                            {% else %}
-                                                                <div class="answer-summary p-3 bg-warning bg-opacity-10 rounded border">
-                                                                    <h6 class="fw-bold text-warning mb-1">
-                                                                        <i class="fas fa-exclamation-triangle me-1"></i>
-                                                                        Grading Note
-                                                                    </h6>
-                                                                    <p class="mb-0 small">
-                                                                        No specific correct answer provided. This question will require manual grading.
-                                                                    </p>
-                                                                </div>
-                                                            {% endif %}
-                                                        </div>
-                                                    {% endif %}
+                                                    <p class="fw-medium mb-3">{{ question.question_text }}</p>       
                                                 </div>
                                             </div>
                                         </div>
@@ -521,7 +317,6 @@
                             <th class="ps-4">Employee</th>
                             <th>Department</th>
                             <th>Status</th>
-                            <th>Progress</th>
                             <th>Quiz Score</th>
                             <th class="pe-4">Completion Date</th>
                         </tr>
@@ -558,41 +353,10 @@
                                 <span class="badge bg-secondary">Assigned</span>
                                 {% endif %}
                             </td>
-                            <td>
-                                {% if item.detailed_progress %}
-                                <div class="d-flex align-items-center">
-                                    <div class="progress flex-grow-1 me-2" style="height: 6px;">
-                                        {% if item.detailed_progress.video_total_seconds > 0 %}
-                                        {% widthratio item.detailed_progress.video_watched_seconds item.detailed_progress.video_total_seconds 100 as progress_percent %}
-                                        <div class="progress-bar bg-dark" style="width: {{ progress_percent }}%"></div>
-                                        {% endif %}
-                                    </div>
-                                    <small>
-                                        {% if item.detailed_progress.video_total_seconds > 0 %}
-                                        {% widthratio item.detailed_progress.video_watched_seconds item.detailed_progress.video_total_seconds 100 %}%
-                                        {% else %}
-                                        0%
-                                        {% endif %}
-                                    </small>
-                                </div>
-                                {% else %}
-                                <span class="text-muted">No data</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if item.assignment.last_accessed %}
-                                <small class="text-muted">{{ item.assignment.last_accessed|date:"M d, Y" }}</small>
-                                {% else %}
-                                <span class="text-muted">—</span>
-                                {% endif %}
-                            </td>
+                           
                             <td>
                                 {% if item.latest_quiz %}
                                 <div class="d-flex align-items-center">
-                                    <div class="progress flex-grow-1 me-2" style="height: 6px;">
-                                        <div class="progress-bar {% if item.latest_quiz.passed %}bg-success{% else %}bg-danger{% endif %}" 
-                                             style="width: {{ item.latest_quiz.score }}%"></div>
-                                    </div>
                                     <small>{{ item.latest_quiz.score|floatformat:1 }}%</small>
                                 </div>
                                 {% else %}

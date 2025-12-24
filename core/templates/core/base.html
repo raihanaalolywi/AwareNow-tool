@@ -89,7 +89,7 @@
 
         <li class="nav-item">
           <a class="nav-link nav-secondary {% if request.resolver_match.url_name == 'categories_list' or request.resolver_match.url_name == 'create_category' or request.resolver_match.url_name == 'update_category' or request.resolver_match.url_name == 'delete_category' %}active-nav{% endif %}"
-              href="{% url 'courses:create_category' %}">
+              href="{% url 'courses:categories_list' %}">
               Categories
           </a>
         </li>

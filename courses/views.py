@@ -41,6 +41,7 @@ def platform_admin_dashboard(request):
     total_courses = Course.objects.count()
     published_courses = Course.objects.filter(is_published=True).count()
     total_companies = Company.objects.filter(status='ACTIVE').count()
+    total_categories = CourseCategory.objects.count()
     
     recent_courses = Course.objects.filter(created_by=request.user).order_by('-created_at')[:5]
     
@@ -131,7 +132,8 @@ def platform_admin_dashboard(request):
         'published_courses': published_courses,
         'total_companies': total_companies,
         'recent_courses': recent_courses,
-        # REMOVED: 'user': request.user,  # Not needed
+        'total_categories':total_categories,
+       
         
         # Simple progress stats
         'assigned_count': assigned_count,

@@ -17,6 +17,49 @@
     </div>
 
 
+       <div class="row mb-4 justify-content-center pt-3 pb-5">
+    <div class="col-2">
+        <div class="card" style="border-color: #7b1020;">
+            <div class="card-body text-center">
+                <h6 class="text-muted">TOTAL COMPANIES</h6>
+                <h2 class="fw-bold" style="color: #7b1020;">{{ total_companies }}</h2>
+
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-2">
+        <div class="card" style="border-color: #7b1020;">
+            <div class="card-body text-center">
+                <h6 class="text-muted">TOTAL COURSES</h6>
+                <h2 class="fw-bold" style="color: #7b1020;">{{ total_courses }}</h2>
+
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-2">
+        <div class="card" style="border-color: #7b1020;">
+            <div class="card-body text-center">
+                <h6 class="text-muted">TOTAL TEMPLATES</h6>
+                <h2 class="fw-bold" style="color: #7b1020;">0</h2>
+               
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-2">
+        <div class="card" style="border-color: #7b1020;">
+            <div class="card-body text-center">
+                <h6 class="text-muted">TOTAL CATEGORIES</h6>
+                <h2 class="fw-bold" style="color: #7b1020;">{{total_categories}}</h2>
+                
+            </div>
+        </div>
+    </div>
+</div>
+
+
     <!-- Courses Section -->
     <div class="row mb-5">
         <div class="col-md-5 col-lg-10 mx-auto">
@@ -90,58 +133,7 @@
        
     </div>
 
-    <!-- Companies Section -->
-    <div class="row mb-5">
-        <!-- Company Overview -->
-        <div class="col-md-5 col-lg-10 mx-auto">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header text-white" style="background-color: #7b1020;">
-                    <h5 class="mb-0">Active Companies ({{ total_companies }})</h5>
-                </div>
-                <div class="card-body">
-                    {% if company_summary %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Company</th>
-                                    <th>Employees</th>
-                                    <th>Completed Courses</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for company in company_summary %}
-                                <tr>
-                                    <td>
-                                        <strong>{{ company.name|truncatechars:20 }}</strong>
-                                    </td>
-                                    <td>
-                                        <span class="badge "style="background-color: #7b1020;">{{ company.employee_count }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-soft-success text-dark">{{ company.completed_courses }}</span>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <p class="text-muted">No company data available</p>
-                    </div>
-                    {% endif %}
-                </div>
-                <div class="card-footer bg-light">
-                    <a href="{% url 'account:platform-dashboard' %}" class="btn btn-outline-dark btn-sm">
-                        View All Companies
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        
-    </div>
+   
 
 </div>
 {% endblock %}
