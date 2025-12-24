@@ -140,126 +140,90 @@
       </ul>
       {% endif %}
 
-      <!-- ================= Company Admin ================= -->
-      {% if user.is_authenticated and user.role == "COMPANY_ADMIN" %}
+<!-- ================= Company Admin ================= -->
+{% if user.is_authenticated and user.role == "COMPANY_ADMIN" %}
 
-      <!-- Desktop menu -->
-      <ul class="navbar-nav align-items-center gap-3 d-none d-lg-flex">
+<!-- Desktop menu -->
+<ul class="navbar-nav align-items-center gap-3 d-none d-lg-flex">
 
-        <li class="nav-item">
-          <a class="nav-link nav-secondary {% if request.resolver_match.url_name in 'company-users company-groups' %}active-nav{% endif %}"
-              href="{% url 'account:company-users' %}">
-              Users
-          </a>
-        </li>
+  <li class="nav-item">
+    <a class="nav-link nav-secondary {% if request.resolver_match.url_name in 'company-users company-groups' %}active-nav{% endif %}"
+        href="{% url 'account:company-users' %}">
+        Users
+    </a>
+  </li>
 
-        <!-- <li class="nav-item">
-          <a class="nav-link nav-secondary {% if request.resolver_match.url_name in 'company-users company-groups' %}active-nav{% endif %}" href="#">Library</a>
-        </li> -->
+    <!-- <li class="nav-item">
+      <a class="nav-link nav-secondary" href="#">Library</a>
+    </li> -->
 
-        <li class="nav-item">
-          <a class="nav-link nav-secondary
-             {% if request.resolver_match.url_name == 'company_policies' %}
-               active-nav
-             {% endif %}"
-             href="{% url 'policies:company_policies' %}">
-            Policies
-          </a>
-        </li>
-        
-        
+    <li class="nav-item">
+      <a class="nav-link nav-secondary
+         {% if request.resolver_match.app_name == 'policies' %}
+           active-nav
+         {% endif %}"
+         href="{% url 'policies:policy_list' %}">
+        Policies
+      </a>
+    </li>
 
-        <!-- Campaigns Dropdown (Desktop only) -->
-        <li class="nav-item">
-          <a class="nav-link nav-secondary {% if request.resolver_match.app_name == 'campaigns' and request.resolver_match.url_name == 'phishing' %}active-nav{% endif %}"
-             href="{% url 'campaigns:phishing' %}">
-            Campaigns
-          </a>
-        </li>
-      
-        <!-- <li class="nav-item dropdown">
-          <a class="nav-link nav-secondary dropdown-toggle"
-             href="#"
-             role="button"
-             data-bs-toggle="dropdown">
-            Campaigns
-          </a>
+  <!-- Campaigns (Single link – no dropdown) -->
+  <li class="nav-item">
+    <a class="nav-link nav-secondary {% if request.resolver_match.app_name == 'campaigns' and request.resolver_match.url_name == 'phishing' %}active-nav{% endif %}"
+       href="{% url 'campaigns:phishing' %}">
+      Campaigns
+    </a>
+  </li>
 
-          <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
-            <li><a class="dropdown-item" href="#">Phishing Awareness</a></li>
-            <li><a class="dropdown-item" href="#">Security Awareness</a></li>
-          </ul>
-        </li> -->
+  <li class="nav-item divider"></li>
 
-        <li class="nav-item divider"></li>
+  <li class="nav-item">
+    <a class="nav-logout nav-link fw-normal"
+       href="{% url 'account:logout' %}">
+      logout
+    </a>
+  </li>
 
-        <li class="nav-item">
-          <a class="nav-logout nav-link fw-normal"
-             href="{% url 'account:logout' %}">
-            logout
-          </a>
-        </li>
+</ul>
 
-      </ul>
+<!-- Mobile menu (Company Admin) -->
+<ul class="navbar-nav d-lg-none align-items-center">
 
-      <!-- Mobile menu (Company Admin) -->
-      <ul class="navbar-nav d-lg-none align-items-center">
-
-        <!-- Users -->
-        <li class="nav-item">
-          <a class="nav-link nav-secondary text-center"
-             href="{% url 'account:company-users' %}">
-            Users
-          </a>
-        </li>      
-
-        <!-- Library -->
-        <!-- <li class="nav-item">
-          <a class="nav-link nav-secondary text-center" href="#">
-            Library
-          </a>
-        </li> -->
-
-        <!-- Policies -->
-        <li class="nav-item">
-          <a class="nav-link nav-secondary text-center" href="{% url 'policies:company_policies' %}">
-            Policies
-          </a>
-        </li>
-
-        <!-- Campaigns items (بدون Dropdown) -->
-        <li class="nav-item">
-          <a class="nav-link nav-secondary text-center {% if request.resolver_match.app_name == 'campaigns' and request.resolver_match.url_name == 'phishing' %}active-nav{% endif %}"
-             href="{% url 'campaigns:phishing' %}">
-            Campaigns
-          </a>
-        </li>
-      
-      
-        <!-- <li class="nav-item">
-          <a class="nav-link nav-secondary text-center" href="#">
-            Phishing Awareness
-          </a>
-        </li>
-
-        <li class="nav-item">
-          <a class="nav-link nav-secondary text-center" href="#">
-            Security Awareness
-          </a>
-        </li> -->
-
-        <!-- Logout -->
-        <li class="nav-item mt-2">
-          <a class="nav-logout nav-link fw-normal text-center"
-            href="{% url 'account:logout' %}">
-            logout
-          </a>
-        </li>
-
-      </ul>
+  <!-- Users -->
+  <li class="nav-item">
+    <a class="nav-link nav-secondary text-center"
+       href="{% url 'account:company-users' %}">
+      Users
+    </a>
+  </li>
 
 
-      {% endif %}
+  <!-- Policies -->
+<li class="nav-item">
+  <a class="nav-link nav-secondary text-center" href="{% url 'policies:policy_list' %}">
+      Policies
+  </a>
+</li>
+
+  <!-- Campaigns (Single link – no dropdown) -->
+  <li class="nav-item">
+    <a class="nav-link nav-secondary text-center {% if request.resolver_match.app_name == 'campaigns' and request.resolver_match.url_name == 'phishing' %}active-nav{% endif %}"
+       href="{% url 'campaigns:phishing' %}">
+      Campaigns
+    </a>
+  </li>
+
+  <!-- Logout -->
+  <li class="nav-item mt-2">
+    <a class="nav-logout nav-link fw-normal text-center"
+      href="{% url 'account:logout' %}">
+      logout
+    </a>
+  </li>
+
+</ul>
+
+{% endif %}
 
         <!-- ================= Employee ================= -->
       {% if user.is_authenticated and user.role == "EMPLOYEE" %}

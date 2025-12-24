@@ -19,4 +19,6 @@ urlpatterns = [
         views.publish_and_send,
         name="publish-send",
     ),
+    path("phishing/<int:campaign_id>/report/", views.phishing_report, name="phishing-report"),
+    
 ]
