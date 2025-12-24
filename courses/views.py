@@ -6,6 +6,9 @@ from django.http import HttpResponseForbidden
 from django.db.models import Avg, Count, Q
 
 import json
+from django.db import transaction
+from courses.forms import CourseForm, QuizForm, QuizQuestionFormSet
+from courses.models import Quiz, QuizQuestion
 from django.utils import timezone
 from django.db.models import Max
 
@@ -168,11 +171,10 @@ def platform_admin_dashboard(request):
     })
 
 # ==================== COURSE CREATION ====================
+# ==================== COURSE CREATION ====================
 @login_required
 @platform_admin_required
 def create_course(request):
-    courses = Course.objects.all().order_by('-created_at')
-
     today = timezone.now().date()
     all_companies = Company.objects.filter(
         license_end_date__gte=today
@@ -180,69 +182,93 @@ def create_course(request):
 
     if request.method == 'POST':
         form = CourseForm(request.POST, request.FILES)
+        quiz_form = QuizForm(request.POST)
+        qset = QuizQuestionFormSet(request.POST, prefix="q")  # 4 questions
 
-        if form.is_valid():
-            course = form.save(commit=False)
-            course.created_by = request.user
-            visibility = request.POST.get('visibility')
+        if form.is_valid() and quiz_form.is_valid() and qset.is_valid():
+            with transaction.atomic():
+                # ----------------- Save Course -----------------
+                course = form.save(commit=False)
+                course.created_by = request.user
+                visibility = request.POST.get('visibility')
 
-            # Draft
-            if visibility == 'private':
-                course.is_published = False
-                course.is_active = True
-                course.published_at = None
+                # Draft
+                if visibility == 'private':
+                    course.is_published = False
+                    course.is_active = True
+                    course.published_at = None
 
-            # Published
-            elif visibility in ['global', 'specific']:
-                course.is_published = True
-                course.is_active = True
-                course.published_at = timezone.now()
+                # Published
+                elif visibility in ['global', 'specific']:
+                    course.is_published = True
+                    course.is_active = True
+                    course.published_at = timezone.now()
 
-            course.points_reward = 100
-            course.visibility = visibility
-            course.save()
+                course.points_reward = 100
+                course.visibility = visibility
+                course.save()
 
-            # ✅ NEW: assignment logic
-            today = timezone.now().date()
-            if visibility == 'global':
-                companies = Company.objects.filter(status='ACTIVE', license_end_date__gte=today)
-                for company in companies:
-                    CompanyCourseAssignment.objects.get_or_create(
-                        company=company,
-                        course=course,
-                        defaults={'assigned_by': request.user}
+                # ----------------- Assign Course to Companies -----------------
+                today = timezone.now().date()
+
+                if visibility == 'global':
+                    companies = Company.objects.filter(status='ACTIVE', license_end_date__gte=today)
+                    for company in companies:
+                        CompanyCourseAssignment.objects.get_or_create(
+                            company=company,
+                            course=course,
+                            defaults={'assigned_by': request.user}
+                        )
+
+                elif visibility == 'specific':
+                    company_ids = request.POST.getlist('companies')
+                    companies = Company.objects.filter(
+                        id__in=company_ids,
+                        status='ACTIVE',
+                        license_end_date__gte=today
                     )
+                    for company in companies:
+                        CompanyCourseAssignment.objects.get_or_create(
+                            company=company,
+                            course=course,
+                            defaults={'assigned_by': request.user}
+                        )
 
-            elif visibility == 'specific':
-                company_ids = request.POST.getlist('companies')  
-                companies = Company.objects.filter(
-                    id__in=company_ids,
-                    status='ACTIVE',
-                    license_end_date__gte=today
-                )
-                for company in companies:
-                    CompanyCourseAssignment.objects.get_or_create(
-                        company=company,
-                        course=course,
-                        defaults={'assigned_by': request.user}
-                    )
+                # ----------------- Save Quiz (Settings) -----------------
+                quiz = quiz_form.save(commit=False)
+                quiz.course = course
+                quiz.save()
 
-            messages.success(request, f'✅ Course "{course.title}" created!')
+                # ----------------- Save Questions (up to 4) -----------------
+                order_counter = 1
+                for f in qset:
+                    data = f.cleaned_data
+                    question_text = (data.get("question_text") or "").strip()
 
-            # ➜ Specific companies → assign step
-            # if visibility == 'specific':
-            #     return redirect(
-            #         'courses:assign_course_to_companies',
-            #         course_id=course.id
-            #     )
+                    if not question_text:
+                        continue
 
+                    q_obj = f.save(commit=False)
+                    q_obj.quiz = quiz
+
+                    if not q_obj.order or q_obj.order == 0:
+                        q_obj.order = order_counter
+
+                    order_counter += 1
+                    q_obj.save()
+
+            messages.success(request, f'✅ Course "{course.title}" created with quiz!')
             return redirect('courses:courses_dashboard')
 
     else:
         form = CourseForm()
+        quiz_form = QuizForm()
+        qset = QuizQuestionFormSet(prefix="q")
 
     return render(request, 'courses/create_course.html', {
         'form': form,
+        'quiz_form': quiz_form,
+        'qset': qset,
         'is_edit': False,
         'all_companies': all_companies,
     })
@@ -422,7 +448,7 @@ def create_category(request):
     """Create a new category - admin only"""
     if not request.user.is_platform_admin:
         messages.error(request, "Access denied. Platform admin privileges required.")
-        return redirect('accounts:platform-login')
+        return redirect('account:platform-login')
     
     if request.method == 'POST':
         form = CourseCategoryForm(request.POST)

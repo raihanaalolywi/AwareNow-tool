@@ -41,6 +41,17 @@
           {{ form.scheduled_date }}
         </div>
 
+        <!-- ✅ NEW: End date/time -->
+        <div class="col-md-6">
+          <label class="form-label">Phishing end date &amp; time</label>
+          {{ form.ends_at }}
+          {% if form.ends_at.errors %}
+            <div class="text-danger small mt-1">
+              {{ form.ends_at.errors }}
+            </div>
+          {% endif %}
+        </div>
+
         <!-- ✅ Hidden field (ForeignKey template) -->
         {{ form.template }}
 

@@ -18,7 +18,6 @@ from .models import (
     EmailTemplate,
     CampaignRecipient,
     PhishingEvent,
-    # ✅ أضيفي هذا المودل إذا بتسوين Publish للشركات مثل الكورسات
     CompanyEmailTemplate,
 )
 
@@ -51,6 +50,14 @@ def platform_admin_required(view_func):
 # =========================
 @login_required
 def phishing_list(request):
+    # (5) ✅ Auto-expire: Published → Completed عند انتهاء ends_at
+    now = timezone.now()
+    PhishingCampaign.objects.filter(
+        status="published",
+        ends_at__isnull=False,
+        ends_at__lte=now
+    ).update(status="completed")
+
     q = request.GET.get("q", "").strip()
 
     campaigns = PhishingCampaign.objects.all().order_by("-created_at")
@@ -147,6 +154,18 @@ def template_preview(request, pk):
 def track_open(request, token):
     recipient = get_object_or_404(CampaignRecipient, token=token)
 
+    # (اختياري) إذا انتهت الحملة نقدر نوقف تسجيل open
+    campaign = recipient.campaign
+    if campaign.ends_at and timezone.now() >= campaign.ends_at:
+        # نخلي البيكسل يرجع عادي بدون تسجيل (عشان ما يكسر عرض الإيميل)
+        pixel = (
+            b"\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00"
+            b"\x00\x00\x00\xff\xff\xff\x21\xf9\x04\x01\x00\x00\x00"
+            b"\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02"
+            b"\x44\x01\x00\x3b"
+        )
+        return HttpResponse(pixel, content_type="image/gif")
+
     if recipient.opened_at is None:
         recipient.opened_at = timezone.now()
         recipient.save(update_fields=["opened_at"])
@@ -170,6 +189,11 @@ def track_open(request, token):
 
 def track_click(request, token):
     recipient = get_object_or_404(CampaignRecipient, token=token)
+    campaign = recipient.campaign
+
+    # (اختياري) إذا انتهت الحملة، نمنع التتبع ونرجع رسالة
+    if campaign.ends_at and timezone.now() >= campaign.ends_at:
+        return HttpResponse("Campaign expired", status=410)
 
     encoded_url = request.GET.get("u", "").strip()
     if not encoded_url:
@@ -198,6 +222,11 @@ def track_click(request, token):
 
 def track_fall(request, token):
     recipient = get_object_or_404(CampaignRecipient, token=token)
+    campaign = recipient.campaign
+
+    # (اختياري) إذا انتهت الحملة، نوقف التتبع
+    if campaign.ends_at and timezone.now() >= campaign.ends_at:
+        return HttpResponse("Campaign expired", status=410)
 
     if recipient.fallen_at is None:
         recipient.fallen_at = timezone.now()
@@ -211,10 +240,8 @@ def track_fall(request, token):
         user_agent=(request.META.get("HTTP_USER_AGENT", "") or "")[:512],
     )
 
-    # ✅ Auto move campaign to Completed when someone falls
-    if recipient.campaign.status != "completed":
-        recipient.campaign.status = "completed"
-        recipient.campaign.save(update_fields=["status"])
+    # (4) ✅ تم إلغاء نقل الحملة إلى Completed عند FALL
+    # ❌ لا تغيّرين status هنا أبداً
 
     return HttpResponse(
         """
@@ -244,6 +271,10 @@ def publish_and_send(request, campaign_id):
 
     if not campaign.user_group_id:
         return HttpResponse("Campaign has no user group.", status=400)
+
+    # ✅ تأكيد ends_at موجود (بما إنك تبين مدة للحملة)
+    if not campaign.ends_at:
+        return HttpResponse("Campaign has no end date/time (ends_at).", status=400)
 
     group = campaign.user_group
     group_users = (
@@ -468,9 +499,6 @@ def edit_template(request, template_id):
 
             updated.visibility = visibility
             updated.save()
-
-            # ✅ (اختياري) تحديث التعيين للشركات عند specific/global
-            # لو تبين نحدث الربط عند التعديل قولي لي وبأضيفه لك
 
             messages.success(request, f'✅ Template "{updated.name}" updated!')
             return redirect("campaigns:templates_dashboard")

@@ -16,15 +16,6 @@
         </a>
     </div>
 
-    <!-- ✅ Success Message Only -->
-    <!-- {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} mb-3">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %} -->
-
     <form method="post" class="row g-4" enctype="multipart/form-data">
         {% csrf_token %}
 
@@ -71,25 +62,6 @@
                                 <div class="invalid-feedback d-block">{{ error }}</div>
                             {% endfor %}
                         </div>
-                        
-                        <!-- <div class="col-md-6 mb-3">
-                            <label class="form-label small">Category</label>
-                            <select
-                                name="category"
-                                class="form-select {% if form.category.errors %}is-invalid{% endif %}"
-                            >
-                                <option value="">Select Category</option>
-                                {% for option in form.category.field.choices %}
-                                    <option value="{{ option.0 }}" 
-                                        {% if form.category.value == option.0|stringformat:"s" %}selected{% endif %}>
-                                        {{ option.1 }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                            {% for error in form.category.errors %}
-                                <div class="invalid-feedback">{{ error }}</div>
-                            {% endfor %}
-                        </div> -->
 
                         <div class="col-md-6 mb-3">
                             <label class="form-label small">Thumbnail Image</label>
@@ -150,12 +122,161 @@
             </div>
         </div>
 
-        <!-- ================= Course Settings ================= -->
+        <!-- ================= Quiz Section (NEW) ================= -->
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body p-4">
+                    <h5 class="fw-semibold mb-1">Course Quiz</h5>
+                    <small class="text-muted d-block mb-3">Add up to 4 questions for this course.</small>
+
+                    <!-- Quiz Settings -->
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label small">Passing score (%)</label>
+                            {{ quiz_form.passing_score }}
+                            {% for error in quiz_form.passing_score.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small">Time limit (minutes)</label>
+                            {{ quiz_form.time_limit_minutes }}
+                            {% for error in quiz_form.time_limit_minutes.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label small">Max attempts</label>
+                            {{ quiz_form.max_attempts }}
+                            {% for error in quiz_form.max_attempts.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="col-12 mt-1">
+                            <div class="form-check">
+                                {{ quiz_form.is_active }}
+                                <label class="form-check-label">Quiz is active</label>
+                            </div>
+                            {% for error in quiz_form.is_active.errors %}
+                                <div class="invalid-feedback d-block">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Formset management form (IMPORTANT) -->
+                    {{ qset.management_form }}
+
+                    <h6 class="fw-semibold mb-3">Questions</h6>
+
+                    {% for qform in qset %}
+                        <div class="border rounded-3 p-3 mb-3">
+
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div class="fw-semibold">Question {{ forloop.counter }}</div>
+                                <div style="width:140px;">
+                                    <label class="form-label small mb-1">Order</label>
+                                    {{ qform.order }}
+                                    {% for error in qform.order.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label small">Question text</label>
+                                {{ qform.question_text }}
+                                {% for error in qform.question_text.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label small">Question type</label>
+                                    {{ qform.question_type }}
+                                    {% for error in qform.question_type.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label small">Points</label>
+                                    {{ qform.points }}
+                                    {% for error in qform.points.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label small">Correct answer(s)</label>
+                                    {{ qform.correct_answers }}
+                                    <div class="form-text">Examples: <b>A</b> or <b>A,C</b> or <b>True</b></div>
+                                    {% for error in qform.correct_answers.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="row g-3 mt-1">
+                                <div class="col-md-6">
+                                    <label class="form-label small">Option A</label>
+                                    {{ qform.option_a }}
+                                    {% for error in qform.option_a.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small">Option B</label>
+                                    {{ qform.option_b }}
+                                    {% for error in qform.option_b.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small">Option C</label>
+                                    {{ qform.option_c }}
+                                    {% for error in qform.option_c.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label class="form-label small">Option D</label>
+                                    {{ qform.option_d }}
+                                    {% for error in qform.option_d.errors %}
+                                        <div class="invalid-feedback d-block">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="mt-3">
+                                <label class="form-label small">Explanation (optional)</label>
+                                {{ qform.explanation }}
+                                {% for error in qform.explanation.errors %}
+                                    <div class="invalid-feedback d-block">{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                        </div>
+                    {% endfor %}
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= Course Publishing ================= -->
         <div class="col-12">
             <div class="card border-0 shadow-sm">
               <div class="card-body p-4">
                 <h5 class="fw-semibold mb-3">Course Publishing</h5>
-          
+
                 <!-- Draft -->
                 <div class="form-check mb-3">
                   <input class="form-check-input"
@@ -172,7 +293,7 @@
                     Course will not be visible to any company.
                   </div>
                 </div>
-          
+
                 <!-- Publish All -->
                 <div class="form-check mb-3">
                   <input class="form-check-input"
@@ -185,7 +306,7 @@
                     Publish to all companies
                   </label>
                 </div>
-          
+
                 <!-- Publish Specific -->
                 <div class="form-check">
                   <input class="form-check-input"
@@ -198,17 +319,16 @@
                     Publish to specific companies
                   </label>
                 </div>
-          
+
               </div>
             </div>
         </div>
-
 
         <div id="specificCompanies" class="mt-4 collapse">
             <div class="card border">
               <div class="card-body">
                 <h6 class="fw-semibold mb-3">Select Companies</h6>
-          
+
                 {% for company in all_companies %}
                   <div class="form-check">
                     <input class="form-check-input"
@@ -220,62 +340,10 @@
                     </label>
                   </div>
                 {% endfor %}
-          
+
               </div>
             </div>
         </div>
-          
-          
-        <!-- <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
-                  <h5 class="fw-semibold mb-3">Course Publishing</h5>
-              
-                  <div class="form-check mb-3">
-                    <input class="form-check-input"
-                           type="radio"
-                           name="visibility"
-                           id="draft"
-                           value="private"
-                           checked>
-                    <label class="form-check-label fw-medium" for="draft">
-                      Save as Draft
-                    </label>
-                    <div class="text-muted small">
-                      Course will not be visible to any company.
-                    </div>
-                  </div>
-              
-                  <div class="form-check mb-3">
-                    <input class="form-check-input"
-                           type="radio"
-                           name="visibility"
-                           id="publish_all"
-                           value="global">
-                    <label class="form-check-label fw-medium" for="publish_all">
-                      Publish to all companies
-                    </label>
-                    <div class="text-muted small">
-                      Course will be available to all active companies.
-                    </div>
-                  </div>
-              
-                  <div class="form-check">
-                    <input class="form-check-input"
-                           type="radio"
-                           name="visibility"
-                           id="publish_specific"
-                           value="specific">
-                    <label class="form-check-label fw-medium" for="publish_specific">
-                      Publish to specific companies
-                    </label>
-                    <div class="text-muted small">
-                      You will choose companies in the next step.
-                    </div>
-                  </div>
-                </div>
-              </div>                     
-        </div> -->
 
         <!-- Submit -->
         <div class="col-12 d-flex justify-content-end">
@@ -288,12 +356,26 @@
 </div>
 
 <script>
-    const specificRadio = document.getElementById('publish_specific');
-    const collapse = document.getElementById('specificCompanies');
-  
-    specificRadio.addEventListener('change', () => {
+  // Show/hide "specific companies"
+  const specificRadio = document.getElementById('publish_specific');
+  const allRadio = document.getElementById('publish_all');
+  const draftRadio = document.getElementById('draft');
+  const collapse = document.getElementById('specificCompanies');
+
+  function syncCompaniesCollapse(){
+    if (specificRadio && specificRadio.checked) {
       collapse.classList.add('show');
-    });
+    } else {
+      collapse.classList.remove('show');
+    }
+  }
+
+  if (specificRadio) specificRadio.addEventListener('change', syncCompaniesCollapse);
+  if (allRadio) allRadio.addEventListener('change', syncCompaniesCollapse);
+  if (draftRadio) draftRadio.addEventListener('change', syncCompaniesCollapse);
+
+  // On load
+  syncCompaniesCollapse();
 </script>
-  
+
 {% endblock %}

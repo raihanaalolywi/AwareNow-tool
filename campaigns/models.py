@@ -77,7 +77,9 @@ class CompanyEmailTemplate(models.Model):
         return f"{self.company.name} → {self.template.name}"
 
 
-# Phishing Campaign
+from django.db import models
+from django.utils import timezone
+
 class PhishingCampaign(models.Model):
     STATUS_CHOICES = (
         ("draft", "Draft"),
@@ -97,7 +99,15 @@ class PhishingCampaign(models.Model):
 
     sender = models.EmailField()
 
+    # تاريخ بدء الحملة (اختياري)
     scheduled_date = models.DateField(null=True, blank=True)
+
+    # ✅ تاريخ انتهاء الحملة (مدة الفيشنق)
+    ends_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="Phishing campaign expiry date & time"
+    )
 
     status = models.CharField(
         max_length=20,
@@ -114,6 +124,12 @@ class PhishingCampaign(models.Model):
     )
 
     created_at = models.DateTimeField(default=timezone.now)
+
+    def is_expired(self):
+        """
+        ترجع True إذا انتهت مدة الحملة
+        """
+        return self.ends_at and timezone.now() >= self.ends_at
 
     def __str__(self):
         return self.title
