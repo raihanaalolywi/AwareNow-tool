@@ -162,7 +162,7 @@
          {% if request.resolver_match.app_name == 'policies' %}
            active-nav
          {% endif %}"
-         href="{% url 'policies:policy_list' %}">
+         href="{% url 'policies:company_policies' %}">
         Policies
       </a>
     </li>
@@ -200,7 +200,7 @@
 
   <!-- Policies -->
 <li class="nav-item">
-  <a class="nav-link nav-secondary text-center" href="{% url 'policies:policy_list' %}">
+  <a class="nav-link nav-secondary text-center" href="{% url 'policies:company_policies' %}">
       Policies
   </a>
 </li>
@@ -272,7 +272,7 @@
         <!-- Policies -->
         <li class="nav-item">
           <a class="nav-link nav-secondary text-center" 
-             href="#">
+             href="{% url 'policies:employee_policies' %}">
             Policies
           </a>
         </li>
