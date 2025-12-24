@@ -422,7 +422,7 @@ def create_category(request):
     """Create a new category - admin only"""
     if not request.user.is_platform_admin:
         messages.error(request, "Access denied. Platform admin privileges required.")
-        return redirect('home')
+        return redirect('accounts:platform-login')
     
     if request.method == 'POST':
         form = CourseCategoryForm(request.POST)
@@ -449,7 +449,7 @@ def update_category(request, pk):
     """Update a category - admin only"""
     if not request.user.is_platform_admin:
         messages.error(request, "Access denied. Platform admin privileges required.")
-        return redirect('home')
+        return redirect('accounts:platform-login')
     
     category = get_object_or_404(CourseCategory, pk=pk)
     
@@ -480,7 +480,7 @@ def delete_category(request, pk):
     """Delete a category - admin only"""
     if not request.user.is_platform_admin:
         messages.error(request, "Access denied. Platform admin privileges required.")
-        return redirect('home')
+        return redirect('accounts:platform-login')
     
     category = get_object_or_404(CourseCategory, pk=pk)
     

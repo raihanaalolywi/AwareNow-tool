@@ -225,7 +225,7 @@
 
         <li class="nav-item">
           <a class="nav-link nav-secondary {% if request.resolver_match.url_name == 'password_checker' %}active-nav{% endif %}"
-              href="#">
+              href="{% url 'account:password_checker' %}">
               Password Checker
           </a>
         </li>
@@ -254,7 +254,7 @@
         <!-- Password Checker -->
         <li class="nav-item">
           <a class="nav-link nav-secondary text-center" 
-             href="#">
+             href="{% url 'account:password_checker' %}">
             Password Checker
           </a>
         </li>
