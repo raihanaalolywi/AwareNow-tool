@@ -1,0 +1,66 @@
+{% extends "core/base.html" %}
+{% block title %}My Policies{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+  <!-- Header -->
+  <div class="mb-4">
+    <h2 class="fw-bold mb-1">Policies</h2>
+    <p class="text-muted small mb-0">
+      Please review and acknowledge the following policies
+    </p>
+  </div>
+
+  <!-- Policies -->
+  <div class="row g-3">
+    {% for policy in policies %}
+    <div class="col-12">
+      <div class="overview-card">
+
+        <!-- Title -->
+        <h5 class="fw-semibold mb-2">
+          {{ policy.title }}
+        </h5>
+
+        <!-- Description -->
+        <p class="text-muted small mb-3">
+          {{ policy.description }}
+        </p>
+
+        <!-- Acknowledge -->
+        <form method="post"
+              action="{% url 'policies:policy_acknowledge' policy.id %}">
+          {% csrf_token %}
+
+          <div class="form-check d-flex align-items-center gap-2">
+            <input class="form-check-input"
+                   type="checkbox"
+                   onchange="this.form.submit()"
+                   {% if policy.id in acknowledged_ids %}
+                       checked disabled
+                   {% endif %}>
+
+            <label class="form-check-label small">
+              I acknowledge that I have read and understood this policy
+            </label>
+          </div>
+
+          {% if policy.id in acknowledged_ids %}
+            <small class="d-block mt-1 fw-medium fs-6" style="color: var(--brand);">
+              ✔ Acknowledged
+            </small>
+          {% endif %}
+        </form>
+
+      </div>
+    </div>
+    {% empty %}
+    <div class="text-center text-muted py-5">
+      No policies assigned to you
+    </div>
+    {% endfor %}
+  </div>
+
+</div>
+{% endblock %}

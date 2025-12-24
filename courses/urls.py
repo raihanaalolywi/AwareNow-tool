@@ -18,5 +18,10 @@ urlpatterns = [
     name='course_companies_view'
     ),
 
+    path('categories/', views.category_list, name='categories_list'),
+    path('categories/create/', views.create_category, name='create_category'),
+    path('categories/<int:pk>/edit/', views.update_category, name='update_category'),
+    path('categories/<int:pk>/delete/', views.delete_category, name='delete_category'),
+
 
 ]

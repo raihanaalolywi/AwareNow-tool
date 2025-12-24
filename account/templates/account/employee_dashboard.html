@@ -6,17 +6,25 @@
 {% block content %}
 <div class="container py-4">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="mb-5">
+        <h2 class="fw-bold mb-0">
+          Welcome back, {{ request.user.get_full_name|default:request.user.username }}
+        </h2>
+        <p class="text-muted mb-1 fw-normal">
+          My Learning Dashboard
+        </p>
+      </div>
+    <!-- <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="fw-bold mb-0">My Learning Dashboard</h3>
             <p class="text-muted mb-0">
                 Welcome back, {{ request.user.get_full_name|default:request.user.username }}
             </p>
         </div>
-    </div>
+    </div> -->
 
     <!-- Statistics -->
-    <div class="row mb-4 d-flex justify-content-between align-items-center px-4">
+    <!-- <div class="row mb-4 d-flex justify-content-between align-items-center px-4">
         <div class="col-md-3">
             <div class="card border-0 shadow-sm bg-gradient-primary text-dark">
                 <div class="card-body">
@@ -45,7 +53,37 @@
             </div>
         </div>
 
-    </div>
+    </div> -->
+
+    <div class="row mb-5">
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <small class="text-muted">Assigned</small>
+              <h3 class="fw-bold text-brand mb-0">{{ assigned_count }}</h3>
+            </div>
+          </div>
+        </div>
+      
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <small class="text-muted">In Progress</small>
+              <h3 class="fw-bold text-warning mb-0">{{ in_progress_count }}</h3>
+            </div>
+          </div>
+        </div>
+      
+        <div class="col-md-4">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <small class="text-muted">Completed</small>
+              <h3 class="fw-bold text-success mb-0">{{ completed_count }}</h3>
+            </div>
+          </div>
+        </div>
+      </div>
+      
 
     <!-- Course Cards Grid -->
     <div class="row">
@@ -129,6 +167,23 @@
                             <div class="mt-3">
                                 {% if assignment.status == 'assigned' %}
                                 <a href="{% url 'account:view_course' assignment.course.id %}" 
+                                class="btn btn-brand w-100">
+                                Start Course
+                                </a>
+
+                                {% elif assignment.status == 'in_progress' %}
+                                <a href="{% url 'account:view_course' assignment.course.id %}" 
+                                class="btn btn-brand w-100">
+                                Continue Learning
+                                </a>
+
+                                {% elif assignment.status == 'completed' %}
+                                <button class="btn btn-outline-success w-100" disabled>
+                                Completed
+                                </button>
+                                {% endif %}
+                                <!-- {% if assignment.status == 'assigned' %}
+                                <a href="{% url 'account:view_course' assignment.course.id %}" 
                                    class="btn btn-dark w-100">
                                     <i class="fas fa-play me-1"></i> Start Course
                                 </a>
@@ -141,8 +196,8 @@
                                 <button class="btn btn-outline-success w-100" disabled>
                                     <i class="fas fa-check-circle me-1"></i> Completed
                                 </button>
-                                {% endif %}
-                            </div>
+                                {% endif %} -->
+                            </div>             
                         </div>
                     </div>
                 </div>

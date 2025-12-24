@@ -15,7 +15,7 @@ urlpatterns = [
     path('employee/quiz/<int:course_id>/start/', views.start_quiz, name='start_quiz'),
     path('employee/quiz/<int:attempt_id>/submit/', views.submit_quiz, name='submit_quiz'),
     path('employee/quiz/<int:attempt_id>/result/', views.quiz_result, name='quiz_result'),
-    # path('employee/quiz/<int:attempt_id>/take/', views.take_quiz, name='take_quiz'),
+    path('employee/quiz/<int:attempt_id>/take/', views.take_quiz, name='take_quiz'),
 
     path("company/dashboard/", views.company_dashboard, name="company-dashboard"),
     path("company/courses/<int:course_id>/progress/", 

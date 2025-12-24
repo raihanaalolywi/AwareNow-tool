@@ -50,20 +50,15 @@ class CourseForm(forms.ModelForm):
             raise ValidationError('Video duration cannot exceed 10 hours.')
         return duration
 
+# forms.py
 class CourseCategoryForm(forms.ModelForm):
     class Meta:
         model = CourseCategory
-        fields = ['name', 'description', 'icon', 'color']
+        fields = ['name', 'description']  # Only name and description
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control'}),
-            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
-            'icon': forms.TextInput(attrs={
-                'class': 'form-control',
-                'placeholder': 'book, shield-alt, lock, etc.'
-            }),
-            'color': forms.TextInput(attrs={
-                'class': 'form-control',
-                'type': 'color',
-                'style': 'width: 50px; height: 38px; padding: 0;'
-            }),
+            'description': forms.Textarea(attrs={'rows': 3}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add any additional initialization here

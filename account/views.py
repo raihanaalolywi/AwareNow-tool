@@ -328,6 +328,8 @@ def employee_dashboard(request):
         messages.error(request, "Employee profile not found. Please contact administrator.")
         return redirect("account:platform-login")
 
+
+
 @login_required
 def view_course(request, course_id):
     """View a specific course and track progress"""
@@ -348,6 +350,13 @@ def view_course(request, course_id):
                 'assigned_at': timezone.now()
             }
         )
+        # ✅ NEW LOGIC: start course automatically
+        if assignment.status == 'assigned':
+            assignment.status = 'in_progress'
+            if not assignment.started_at:
+                assignment.started_at = timezone.now()
+            assignment.save()
+
         # In your view_course function, add this after getting the assignment:
 
         # Check if quiz is passed and get attempts
@@ -870,6 +879,8 @@ def remove_user_from_group(request, group_id, user_id):
     messages.success(request, "User removed from group.")
     return redirect("account:group-detail", group_id=group.id)
 
+
+
 @login_required
 def start_quiz(request, course_id):
     """Start or continue a quiz for a course"""
@@ -1040,14 +1051,27 @@ def submit_quiz(request, attempt_id):
         attempt.time_taken_seconds = int(time_taken)
         attempt.answers_data = answers_data
         attempt.save()
-        
-        return JsonResponse({
-            'success': True,
-            'score': round(score_percentage, 1),
-            'passed': attempt.passed,
-            'passing_score': attempt.quiz.passing_score,
-            'redirect_url': reverse('account:quiz_result', args=[attempt.id])
-        })
+        # ✅ Mark course as completed after submitting quiz (regardless of pass/fail)
+        assignment = EmployeeCourseAssignment.objects.get(
+            employee=attempt.employee,
+            course=attempt.quiz.course
+        )
+
+        assignment.status = 'completed'
+        assignment.progress_percentage = 100
+        assignment.completed_at = timezone.now()
+        assignment.save()
+
+
+        return redirect('account:quiz_result', attempt_id=attempt.id)
+
+        # return JsonResponse({
+        #     'success': True,
+        #     'score': round(score_percentage, 1),
+        #     'passed': attempt.passed,
+        #     'passing_score': attempt.quiz.passing_score,
+        #     'redirect_url': reverse('account:quiz_result', args=[attempt.id])
+        # })
         
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
@@ -1112,4 +1136,73 @@ def quiz_result(request, attempt_id):
         
     except QuizAttempt.DoesNotExist:
         messages.error(request, "Quiz attempt not found.")
+        return redirect('account:employee_dashboard')
+    
+@login_required
+def take_quiz(request, attempt_id):
+    """Display the quiz questions"""
+    if request.user.role != "EMPLOYEE":
+        return redirect("account:platform-login")
+    
+    try:
+        employee_profile = EmployeeProfile.objects.get(user=request.user)
+        attempt = get_object_or_404(
+            QuizAttempt,
+            id=attempt_id,
+            employee=employee_profile
+        )
+        
+        # Check if already completed
+        if attempt.completed_at is not None:
+            messages.info(request, "This quiz has already been completed.")
+            return redirect('account:quiz_result', attempt_id=attempt.id)
+        
+        quiz = attempt.quiz
+        course = quiz.course
+        
+        # Check assignment
+        assignment = get_object_or_404(
+            EmployeeCourseAssignment,
+            employee=employee_profile,
+            course=course
+        )
+        
+        # Prepare questions
+        questions = []
+        for question in quiz.questions.all():
+            options = []
+            
+            if question.question_type in ['multiple_choice', 'multiple_select']:
+                if question.option_a: options.append(('A', question.option_a))
+                if question.option_b: options.append(('B', question.option_b))
+                if question.option_c: options.append(('C', question.option_c))
+                if question.option_d: options.append(('D', question.option_d))
+            elif question.question_type == 'true_false':
+                options = [('True', 'True'), ('False', 'False')]
+            
+            questions.append({
+                'id': question.id,
+                'question_text': question.question_text,
+                'question_type': question.question_type,
+                'options': options,
+                'points': question.points,
+                'order': question.order,
+                'explanation': question.explanation,
+            })
+        
+        context = {
+            'course': course,
+            'quiz': quiz,
+            'attempt': attempt,
+            'attempt_number': attempt.attempt_number,
+            'questions': questions,
+            'assignment': assignment,
+            'time_limit': quiz.time_limit_minutes * 60 if quiz.time_limit_minutes > 0 else 0,
+        }
+        
+        return render(request, 'account/take_quiz.html', context)
+        
+    except Exception as e:
+        print(f"Error in take_quiz: {e}")
+        messages.error(request, "Error loading quiz.")
         return redirect('account:employee_dashboard')

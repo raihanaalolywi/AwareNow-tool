@@ -8,30 +8,10 @@ class CourseCategory(models.Model):
     name = models.CharField(max_length=100, unique=True)
     description = models.TextField(blank=True)
     
-      # Font Awesome icon class name (without the 'fa-' prefix)
-    icon = models.CharField(
-        max_length=50, 
-        blank=True,
-        default='book',
-        help_text="Font Awesome icon name (e.g., 'shield-alt', 'user-secret', 'lock')"
-    )
-    
-    # Optional: Color for the category
-    color = models.CharField(
-        max_length=7,  # Hex color code
-        default='#3498db',
-        help_text="Hex color code for this category"
-    )
-    
+
     def __str__(self):
         return self.name
     
-    def get_icon_html(self):
-        """Generate HTML for the icon"""
-        return f'<i class="fas fa-{self.icon}"></i>'
-    
-    def __str__(self):
-        return self.name
     
 def course_thumbnail_path(instance, filename):
     """
@@ -237,6 +217,8 @@ class EmployeeCourseProgress(models.Model):
     def __str__(self):
         return f"Progress: {self.assignment.employee.user.email} - {self.assignment.course.title}"
     
+
+    
 class Quiz(models.Model):
     """
     Quiz associated with a course
@@ -306,7 +288,7 @@ class QuizQuestion(models.Model):
             options.append(('C', self.option_c))
         if self.option_d:
             options.append(('D', self.option_d))
-            
+
         return options
     
     class Meta:

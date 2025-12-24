@@ -18,9 +18,13 @@
             </small>
         </div>
 
-        <button class="btn btn-dark" data-bs-toggle="collapse" data-bs-target="#createUserForm">
+        <!-- <button class="btn btn-dark" data-bs-toggle="collapse" data-bs-target="#createUserForm">
+            + Create User
+        </button> -->
+        <button class="btn btn-brand" data-bs-toggle="collapse" data-bs-target="#createUserForm">
             + Create User
         </button>
+          
     </div>
 
     <!-- Create User Form -->
@@ -123,7 +127,7 @@
                 </div>
 
                 <div class="mt-4 d-flex justify-content-end">
-                    <button type="submit" class="btn btn-success">
+                    <button type="submit" class="btn btn-brand">
                         Create User
                     </button>
                 </div>
@@ -131,7 +135,7 @@
         </div>
     </div>
     <!-- ========= Tab -> user group ======= -->
-    <ul class="nav nav-pills users-tabs mb-4">
+    <!-- <ul class="nav nav-pills users-tabs mb-4">
         <li class="nav-item">
             <a class="nav-link {% if request.resolver_match.url_name == 'company-users' %}active{% endif %}"
                href="{% url 'account:company-users' %}">
@@ -144,9 +148,23 @@
                 Groups
             </a>
         </li>
-    </ul>
+    </ul> -->
+    <ul class="nav users-tabs mb-4">
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'company-users' %}active{% endif %}"
+             href="{% url 'account:company-users' %}">
+            Users
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.resolver_match.url_name == 'company-groups' %}active{% endif %}"
+             href="{% url 'account:company-groups' %}">
+            Groups
+          </a>
+        </li>
+      </ul>      
 
-    <form method="get" class="d-flex gap-2 mb-3">
+    <form method="get" class="d-flex gap-2 mb-3 justify-content-end">
 
         <!-- Status Filter -->
         <select name="status" class="form-select form-select-sm w-auto">
@@ -174,7 +192,7 @@
         </select>
     
         <!-- Submit -->
-        <button type="submit" class="btn btn-sm btn-outline-dark">
+        <button type="submit" class="btn btn-sm btn-brand px-3">
             Filter
         </button>
     </form>
@@ -238,7 +256,7 @@
                             {% endif %}
                         </td>
 
-                        <td class="text-end">
+                        <!-- <td class="text-end">
                             {% if user.is_active and not user.is_disabled and user != request.user %}
                                 <a href="{% url 'account:toggle-user-active' user.id %}"
                                    class="btn btn-sm btn-outline-danger">
@@ -247,7 +265,26 @@
                             {% else %}
                                 <span class="text-muted small">-</span>
                             {% endif %}
-                        </td>                                    
+                        </td>                                     -->
+                        <td class="text-end">
+                            {% if user.is_active and not user.is_disabled and user != request.user %}
+                              <a href="{% url 'account:toggle-user-active' user.id %}"
+                                 class="icon-action"
+                                 data-bs-toggle="tooltip"
+                                 title="Disable user"
+                                 onclick="return confirm('Disable this user?')">
+                          
+                                <span class="material-symbols-outlined action-icon text-brand">
+                                  person_off
+                                </span>
+                          
+                              </a>
+                            {% else %}
+                              <span class="text-muted small">-</span>
+                            {% endif %}
+                          </td>
+                          
+                          
                     </tr>
                     {% empty %}
                     <tr>

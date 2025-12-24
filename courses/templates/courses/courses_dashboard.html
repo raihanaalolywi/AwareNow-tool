@@ -14,7 +14,7 @@
             </small>
         </div>
 
-        <a href="{% url 'courses:create_course' %}" class="btn btn-dark">
+        <a href="{% url 'courses:create_course' %}" class="btn text-light" style="background-color: #7b1020;">
             + Create Course
         </a>
     </div>
@@ -25,7 +25,7 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
 
             <!-- Title -->
-            <h5 class="fw-semibold mb-0">All Courses</h5>
+            <h5 class="fw-semibold mb-0">All Courses ({{ total_courses }})</h5>
 
             <!-- Filters -->
             <form method="get" class="d-flex gap-2">

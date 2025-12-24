@@ -16,54 +16,12 @@
         </div>
     </div>
 
-    <!-- Quick Stats - Black & Grey -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card border-dark">
-                <div class="card-body text-center">
-                    <h6 class="text-muted">TOTAL COURSES</h6>
-                    <h2 class="fw-bold">{{ total_courses }}</h2>
-                    <small class="text-muted">{{ published_courses }} published</small>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card border-dark">
-                <div class="card-body text-center">
-                    <h6 class="text-muted">COMPLETED</h6>
-                    <h2 class="fw-bold">{{ completed_count }}</h2>
-                    <small class="text-muted">course assignments</small>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card border-dark">
-                <div class="card-body text-center">
-                    <h6 class="text-muted">ACTIVE COMPANIES</h6>
-                    <h2 class="fw-bold">{{ total_companies }}</h2>
-                    <small class="text-muted">on platform</small>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-3">
-            <div class="card border-dark">
-                <div class="card-body text-center">
-                    <h6 class="text-muted">OVERDUE</h6>
-                    <h2 class="fw-bold">{{ overdue_count }}</h2>
-                    <small class="text-muted">assignments</small>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <!-- Courses Section -->
-    <div class="row mb-4">
-        <div class="col-md-8">
+    <div class="row mb-5">
+        <div class="col-md-5 col-lg-10 mx-auto">
             <div class="card border-0 shadow-sm">
-                <div class="card-header bg-dark text-white">
+                <div class="card-header text-white" style="background-color: #7b1020;">
                     <h5 class="mb-0">Recent Courses</h5>
                 </div>
                 <div class="card-body">
@@ -93,7 +51,7 @@
                                     </td>
                                     <td>
                                         {% if course.category %}
-                                        <span class="badge bg-light text-dark">{{ course.category.name }}</span>
+                                        <span class="badge text-light" style="background-color: #7b1020;">{{ course.category.name }}</span>
                                         {% else %}
                                         <span class="text-muted">—</span>
                                         {% endif %}
@@ -102,7 +60,7 @@
                                     <td><small class="text-muted">{{ course.created_at|date:"M d, Y" }}</small></td>
                                     <td>
                                         {% if course.is_published %}
-                                        <span class="badge bg-dark">Published</span>
+                                        <span class="badge badge-soft-success" >Published</span>
                                         {% else %}
                                         <span class="badge bg-secondary">Draft</span>
                                         {% endif %}
@@ -119,7 +77,7 @@
                     {% endif %}
                 </div>
                 <div class="card-footer bg-light">
-                    <a href="{% url 'courses:create_course' %}" class="btn btn-dark btn-sm">
+                    <a href="{% url 'courses:create_course' %}" class="btn btn-sm text-light" style="background-color: #7b1020;">
                         + Create New Course
                     </a>
                     <a href="{% url 'courses:courses_dashboard' %}" class="btn btn-outline-dark btn-sm">
@@ -129,70 +87,16 @@
             </div>
         </div>
 
-        <!-- Course Status Overview -->
-        <div class="col-md-4">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0">Course Status</h5>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="text-muted">Assigned</span>
-                            <span class="fw-bold">{{ assigned_count }}</span>
-                        </div>
-                        <div class="progress" style="height: 6px;">
-                            <div class="progress-bar bg-dark" style="width: {% widthratio assigned_count total_assignments 100 %}%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="text-muted">In Progress</span>
-                            <span class="fw-bold">{{ in_progress_count }}</span>
-                        </div>
-                        <div class="progress" style="height: 6px;">
-                            <div class="progress-bar bg-secondary" style="width: {% widthratio in_progress_count total_assignments 100 %}%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="text-muted">Completed</span>
-                            <span class="fw-bold">{{ completed_count }}</span>
-                        </div>
-                        <div class="progress" style="height: 6px;">
-                            <div class="progress-bar bg-dark" style="width: {% widthratio completed_count total_assignments 100 %}%"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span class="text-muted">Overdue</span>
-                            <span class="fw-bold">{{ overdue_count }}</span>
-                        </div>
-                        <div class="progress" style="height: 6px;">
-                            <div class="progress-bar bg-dark" style="width: {% widthratio overdue_count total_assignments 100 %}%"></div>
-                        </div>
-                    </div>
-                    
-                    <hr>
-                    <div class="text-center">
-                        <small class="text-muted">Total Assignments</small>
-                        <h4 class="fw-bold">{{ total_assignments }}</h4>
-                    </div>
-                </div>
-            </div>
-        </div>
+       
     </div>
 
     <!-- Companies Section -->
-    <div class="row">
+    <div class="row mb-5">
         <!-- Company Overview -->
-        <div class="col-md-6">
+        <div class="col-md-5 col-lg-10 mx-auto">
             <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0">Active Companies</h5>
+                <div class="card-header text-white" style="background-color: #7b1020;">
+                    <h5 class="mb-0">Active Companies ({{ total_companies }})</h5>
                 </div>
                 <div class="card-body">
                     {% if company_summary %}
@@ -202,7 +106,7 @@
                                 <tr>
                                     <th>Company</th>
                                     <th>Employees</th>
-                                    <th>Completed</th>
+                                    <th>Completed Courses</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -212,10 +116,10 @@
                                         <strong>{{ company.name|truncatechars:20 }}</strong>
                                     </td>
                                     <td>
-                                        <span class="badge bg-dark">{{ company.employee_count }}</span>
+                                        <span class="badge "style="background-color: #7b1020;">{{ company.employee_count }}</span>
                                     </td>
                                     <td>
-                                        <span class="badge bg-secondary">{{ company.completed_courses }}</span>
+                                        <span class="badge badge-soft-success text-dark">{{ company.completed_courses }}</span>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -236,46 +140,7 @@
             </div>
         </div>
 
-        <!-- Recent Completions -->
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-dark text-white">
-                    <h5 class="mb-0">Recent Completions</h5>
-                </div>
-                <div class="card-body">
-                    {% if recent_completions %}
-                    <div class="table-responsive">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Employee</th>
-                                    <th>Course</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for comp in recent_completions|slice:":5" %}
-                                <tr>
-                                    <td>
-                                        <small class="text-muted">{{ comp.employee_email|truncatechars:20 }}</small>
-                                    </td>
-                                    <td>{{ comp.course|truncatechars:25 }}</td>
-                                    <td>
-                                        <small class="text-muted">{{ comp.completed_date }}</small>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% else %}
-                    <div class="text-center py-4">
-                        <p class="text-muted">No recent completions</p>
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+        
     </div>
 
 </div>

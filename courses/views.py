@@ -11,9 +11,12 @@ from django.db.models import Max
 
 # Remove: from datetime import datetime, timedelta  # Don't need datetime anymore
 from account.models import Company, EmployeeProfile
-from courses.models import Course, CourseCategory, CompanyCourseAssignment, EmployeeCourseAssignment, QuizAttempt
-from courses.forms import CourseForm
+from .models import Course, CourseCategory, CompanyCourseAssignment, EmployeeCourseAssignment, QuizAttempt
+from .forms import CourseForm, CourseCategoryForm
 from django.http import JsonResponse
+
+
+
 
 
 # ==================== PERMISSION CHECK ====================
@@ -309,6 +312,7 @@ def activate_course(request, course_id):
 def courses_dashboard(request):
     # Get all courses
     courses = Course.objects.all().order_by('-created_at')
+    total_courses = courses.count()
     
     # Get categories with course counts
     categories = CourseCategory.objects.annotate(
@@ -331,6 +335,7 @@ def courses_dashboard(request):
     return render(request, 'courses/courses_dashboard.html', {
         'courses': courses,
         'categories': categories,
+        'total_courses': total_courses
     })
 
 # ==================== COURSE ASSIGNMENT ====================
@@ -396,3 +401,96 @@ def course_companies_view(request, course_id):
     return JsonResponse({
         'companies': companies
     })
+
+
+# views.py
+@login_required
+def create_category(request):
+    """Create a new category - admin only"""
+    if not request.user.is_platform_admin:
+        messages.error(request, "Access denied. Platform admin privileges required.")
+        return redirect('home')
+    
+    if request.method == 'POST':
+        form = CourseCategoryForm(request.POST)
+        if form.is_valid():
+            category = form.save()
+            messages.success(request, f'Category "{category.name}" created successfully!')
+            return redirect('courses:categories_list')
+    else:
+        form = CourseCategoryForm()
+    
+    # Get all existing categories for the sidebar
+    categories = CourseCategory.objects.all()
+    
+    context = {
+        'form': form,
+        'categories': categories,
+    }
+    
+    return render(request, 'courses/category_form.html', context)
+
+@login_required
+def update_category(request, pk):
+    """Update a category - admin only"""
+    if not request.user.is_platform_admin:
+        messages.error(request, "Access denied. Platform admin privileges required.")
+        return redirect('home')
+    
+    category = get_object_or_404(CourseCategory, pk=pk)
+    
+    if request.method == 'POST':
+        form = CourseCategoryForm(request.POST, instance=category)
+        if form.is_valid():
+            category = form.save()
+            messages.success(request, f'Category "{category.name}" updated successfully!')
+            return redirect('courses:categories_list')
+    else:
+        form = CourseCategoryForm(instance=category)
+    
+    # Get all existing categories for the sidebar
+    categories = CourseCategory.objects.all()
+    
+    context = {
+        'form': form,
+        'category': category,
+        'categories': categories,
+    }
+    
+    return render(request, 'courses/category_form.html', context)
+
+# views.py
+@login_required
+def delete_category(request, pk):
+    """Delete a category - admin only"""
+    if not request.user.is_platform_admin:
+        messages.error(request, "Access denied. Platform admin privileges required.")
+        return redirect('home')
+    
+    category = get_object_or_404(CourseCategory, pk=pk)
+    
+    # Get course count for warning message
+    course_count = category.course_set.count()
+    
+    if request.method == 'POST':
+        name = category.name
+        category.delete()
+        messages.success(request, f'Category "{name}" deleted successfully!')
+        return redirect('courses:categories_list')
+    
+    context = {
+        'category': category,
+        'course_count': course_count,  # Pass to template
+    }
+    
+    return render(request, 'courses/category_confirm_delete.html', context)
+
+@login_required
+def category_list(request):
+    # Check if user is platform admin
+    if not request.user.is_platform_admin:
+        messages.error(request, "Access denied. Platform admin privileges required.")
+        return redirect('account:platform-login')
+    
+    categories = CourseCategory.objects.all()
+    return render(request, 'courses/categories_list.html', {'categories': categories})

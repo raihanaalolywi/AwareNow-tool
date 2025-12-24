@@ -4,9 +4,12 @@ from . import views
 app_name = 'policies'
 
 urlpatterns = [
-    path('', views.policy_list, name='policy_list'),
-    path('create/', views.create_policy, name='create_policy'),
-    path('detail/<int:id>/', views.policy_detail, name='policy_detail'),
-    path('acknowledge/<int:id>/', views.policy_acknowledge, name='policy_acknowledge')
- 
+    # Company
+    # path("", views.policy_list, name="policy_list"), 
+    path('company/', views.company_policy_dashboard, name='company_policies'),
+    path('company/create/', views.create_policy, name='create_policy'),
+
+    # Employee
+    path('employee/', views.employee_policies, name='employee_policies'),
+    path('acknowledge/<int:id>/', views.policy_acknowledge, name='policy_acknowledge'),
 ]
